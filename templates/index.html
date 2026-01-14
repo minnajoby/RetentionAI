@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetentionAI | Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background-color: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+        .navbar { background-color: #003366; padding: 12px 50px; }
+        .navbar-brand { font-weight: 700; color: white !important; font-size: 22px; }
+        
+        .main-container { margin-top: 30px; padding: 0 50px; }
+        .row-stretch { display: flex; align-items: stretch; }
+        
+        .glass-card { 
+            background: white; border-radius: 15px; padding: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.05); border: none; height: 100%;
+        }
+
+        .section-title {
+            border-left: 4px solid #d4a017; padding-left: 12px;
+            font-weight: 700; color: #003366; margin-bottom: 20px; font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        .input-group-text { background: white; border-right: none; color: #adb5bd; width: 45px; justify-content: center; }
+        .form-control, .form-select { border-left: none; background: #fafafa; font-size: 15px; }
+        label { font-size: 12px; color: #6c757d; font-weight: 600; margin-bottom: 4px; }
+        
+        .btn-run { background: #003366; color: white; border-radius: 6px; padding: 14px; width: 100%; font-weight: 700; border: none; margin-top: 15px; }
+        
+        .engine-card { display: flex; flex-direction: column; text-align: center; }
+        .result-content { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+        
+        .badge-risk { padding: 6px 20px; border-radius: 50px; font-weight: 800; font-size: 13px; margin-bottom: 15px; }
+        .bg-low { background-color: #198754; color: white; }
+        .bg-high { background-color: #dc3545; color: white; }
+        
+        .prob-text { font-size: 58px; font-weight: 800; color: #2d3436; line-height: 1; }
+        .info-footer { font-size: 11px; color: #adb5bd; padding-top: 20px; }
+
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar"><a class="navbar-brand" href="#"><i class="fa-solid fa-brain me-2"></i> RetentionAI</a></nav>
+
+    <div class="container-fluid main-container">
+        <form action="/predict" method="POST">
+        <div class="row g-4 row-stretch">
+            <!-- Left Side: Inputs -->
+            <div class="col-lg-8">
+                <div class="glass-card">
+                    <div class="section-title">Customer Information</div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label>Location</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-earth-americas"></i></span>
+                                <select name="Geography" class="form-select">
+                                    <option value="0" {{ 'selected' if inputs and inputs['Geography'] == '0' }}>France</option>
+                                    <option value="1" {{ 'selected' if inputs and inputs['Geography'] == '1' }}>Germany</option>
+                                    <option value="2" {{ 'selected' if inputs and inputs['Geography'] == '2' }}>Spain</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Gender</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-venus-mars"></i></span>
+                                <select name="Gender" class="form-select">
+                                    <option value="1" {{ 'selected' if inputs and inputs['Gender'] == '1' }}>Male</option>
+                                    <option value="0" {{ 'selected' if inputs and inputs['Gender'] == '0' }}>Female</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Age</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fa-solid fa-calendar-days"></i></span>
+                                <input type="number" name="Age" class="form-control" value="{{ inputs['Age'] if inputs else 35 }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="section-title">Financial & Engagement Profile</div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label>Credit Score</label>
+                            <div class="input-group"><span class="input-group-text"><i class="fa-solid fa-star"></i></span>
+                            <input type="number" name="CreditScore" class="form-control" value="{{ inputs['CreditScore'] if inputs else 650 }}"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Account Balance ($)</label>
+                            <div class="input-group"><span class="input-group-text"><i class="fa-solid fa-building-columns"></i></span>
+                            <input type="number" name="Balance" class="form-control" value="{{ inputs['Balance'] if inputs else 50000 }}"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Tenure (Years)</label>
+                            <input type="number" name="Tenure" class="form-control" value="{{ inputs['Tenure'] if inputs else 5 }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label>Products Used</label>
+                            <input type="number" name="NumOfProducts" class="form-control" value="{{ inputs['NumOfProducts'] if inputs else 1 }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label>Estimated Salary ($)</label>
+                            <input type="number" name="EstimatedSalary" class="form-control" value="{{ inputs['EstimatedSalary'] if inputs else 75000 }}">
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="HasCrCard" value="1" {{ 'checked' if not inputs or inputs['HasCrCard'] }}>
+                                <label class="form-check-label ms-2">Has Credit Card</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="IsActiveMember" value="1" {{ 'checked' if not inputs or inputs['IsActiveMember'] }}>
+                                <label class="form-check-label ms-2">Is Active Member</label>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-run"><i class="fa-solid fa-magnifying-glass me-2"></i> RUN PREDICTION</button>
+                </div>
+            </div>
+
+            <!-- Right Side: Result -->
+            <div class="col-lg-4">
+                <div class="glass-card engine-card">
+                    <h6 class="text-muted fw-bold">PREDICTION ENGINE</h6>
+                    <div class="result-content">
+                        {% if prediction_text %}
+                            <div><span class="badge-risk {{ 'bg-high' if prediction_text == 'HIGH RISK' else 'bg-low' }}">{{ prediction_text }}</span></div>
+                            <div class="prob-text">{{ prob_text }}</div>
+                            <div class="prob-label">Churn Probability</div>
+                        {% else %}
+                            <div class="opacity-25"><i class="fa-solid fa-circle-nodes fa-4x mb-3"></i><p class="fw-bold">Awaiting Input...</p></div>
+                        {% endif %}
+                    </div>
+                    <div class="info-footer"><i class="fa-solid fa-circle-info me-1"></i> CatBoost SOTA Architecture | 91% F1-Score</div>
+                </div>
+            </div>
+        </div>
+        </form>
+    </div>
+</body>
+</html>
