@@ -1,23 +1,26 @@
 # RetentionAI - Bank Churn Project 
 
-## Current Progress (Jan 10, 2026)
-[x] Initial Research & Synopsis
-[x] Environment Setup (Python 3.11, venv)
-[x] Data Ingestion (165,034 records)
-[x] Data Preprocessing Pipeline
-    - Feature Selection (Dropped non-predictive columns)
-    - Label Encoding (Geography, Gender)
-    - Feature Scaling (StandardScaler)
-    - Class Balancing (SMOTE-Tomek Hybrid Resampling)
-[x] Model Training (CatBoost SOTA Architecture)
-    - Achieved F1-Score: 0.9109
-    - Achieved Accuracy: 91%
-    - Training Time: ~11 seconds for 2.5 lakh balanced records.
+## Current Progress (Updated Jan 21, 2026)
+- [x] **Milestone 1 Completion:** Data Engineering & Baseline CatBoost Model (91% F1).
+- [x] **Methodology Standardization:** Transitioned to **Agile/Scrum framework** with iterative Sprints.
+- [x] **Academic Alignment:** Standardized all project references to **IEEE Format**.
+- [x] **Research Framework:** Defined comparative benchmarking metrics for SOTA models (CatBoost, LightGBM, TabNet, TabPFN).
 
-## Results
-The model shows high precision (0.93) for churn detection, proving the effectiveness of the hybrid resampling strategy.
+## Technical Pipeline
+- **Data Ingestion:** 165,034 records (Kaggle S4E1 Synthetic Dataset).
+- **Preprocessing:** 
+    - Feature Selection & Noise Reduction.
+    - **SMOTE-Tomek Hybrid Resampling** (Balanced training set to ~2.5 Lakh records).
+    - Z-score Normalization (StandardScaler).
 
-## How to Run Preprocessing
+## Research Methodology (Sprint 2 Planning)
+The project now follows an iterative Scrum approach:
+  **Sprint 1:** Baseline MVP (CatBoost + Flask Integration) - **Completed**.
+  **Sprint 2:** Comparative Analysis (LightGBM & TabNet implementation) - **In Progress**.
+  **Sprint 3:** Foundation Modeling (TabPFN) & XAI (SHAP) - **Planned**.
+
+## How to Run
 1. Activate venv: `venv\Scripts\activate`
-2. Run: `python preprocess.py`
-3. Run Training: `python train.py`
+2. Install requirements: `pip install -r requirements.txt`
+3. Run Preprocessing: `python preprocess.py`
+4. Run Baseline Training: `python train.py`
