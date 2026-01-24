@@ -13,6 +13,11 @@
     - **SMOTE-Tomek Hybrid Resampling** (Balanced training set to ~2.5 Lakh records).
     - Z-score Normalization (StandardScaler).
 
+## System Architecture
+- **Modular Design:** Refined the pipeline into four distinct layers (Ingestion, Modeling, XAI, Deployment).
+- **Feature Selection Loop:** Implemented a dashed feedback loop logic where XAI insights are used to iteratively refine the Preprocessing stage.
+- **Redundancy Removal:** Streamlined the architectural flow to ensure a unified data path.
+
 ## Research Methodology (Sprint 2 Planning)
 The project now follows an iterative Scrum approach:
   **Sprint 1:** Baseline MVP (CatBoost + Flask Integration) - **Completed**.
