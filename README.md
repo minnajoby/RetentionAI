@@ -29,3 +29,11 @@ The project now follows an iterative Scrum approach:
 2. Install requirements: `pip install -r requirements.txt`
 3. Run Preprocessing: `python preprocess.py`
 4. Run Baseline Training: `python train.py`
+
+## 🏆 SOTA Leaderboard (Finalized Jan 30)
+| Model Rank | Architecture | F1-Score | Latency | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | CatBoost | 91.09% | 10.7s | Champion |
+| 2 | LightGBM | 91.05% | 4.3s | Optimized |
+
+**Update Note (Jan 30):** Finalized hyperparameter tuning for LightGBM. Successfully serialized both boosting models to the `/models` directory for the upcoming multi-model deployment phase.
