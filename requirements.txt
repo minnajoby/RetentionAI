@@ -5,3 +5,5 @@ catboost
 flask
 joblib
 imbalanced-learn
+matplotlib
+shap
