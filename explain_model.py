@@ -72,16 +72,10 @@ plt.title("TabNet Feature Importance (SHAP)", pad=20)
 plt.savefig('static/shap_tabnet.png', bbox_inches='tight')
 plt.close()
 
-# --- D. TabPFN (Fast Research Mode) ---
+# --- D. TabPFN (Fixed Logic) ---
 print("Explaining TabPFN (Transformer)...")
-# We reduce to 30 samples. 30 dots are enough to show the trend for a report.
-X_sample_pfn = X.sample(30, random_state=42) 
-
-# We use a very small background (10 rows) to speed up the math significantly
-background_pfn = shap.sample(X, 10) 
-explainer_pfn = shap.KernelExplainer(pfn.predict_proba, background_pfn)
-
-print("Generating TabPFN Plot (This should now take ~5-8 minutes)...")
+X_sample_pfn = X.sample(100, random_state=42)
+explainer_pfn = shap.KernelExplainer(pfn.predict_proba, background)
 shap_values_pfn = explainer_pfn.shap_values(X_sample_pfn)
 
 if isinstance(shap_values_pfn, list):

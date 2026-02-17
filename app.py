@@ -1,28 +1,77 @@
 from flask import Flask, render_template, request
+from datetime import datetime
 import joblib
 import numpy as np
+import sqlite3
 import os
+from pytorch_tabnet.tab_model import TabNetClassifier
 
 app = Flask(__name__)
 
-# --- Load Model and Scaler ---
-# These must be in your 'models/' folder
-try:
-    model = joblib.load('models/catboost_model.pkl')
-    scaler = joblib.load('models/scaler.pkl')
-    print("--- SUCCESS: Model and Scaler loaded ---")
-except Exception as e:
-    print(f"--- ERROR LOADING MODELS: {e} ---")
+# --- DATABASE SETUP ---
+def init_db():
+    conn = sqlite3.connect('history.db')
+    c = conn.cursor()
+    # Schema: id, time_stamp, model_used, probability, result
+    c.execute('''CREATE TABLE IF NOT EXISTS predictions
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  time_stamp TEXT,
+                  model_used TEXT, 
+                  probability TEXT, 
+                  result TEXT)''')
+    conn.commit()
+    conn.close()
+
+init_db()
+
+# --- GLOBAL MODELS DICTIONARY ---
+models = {}
+scaler = None
+
+def load_all_models():
+    global scaler
+    try:
+        scaler = joblib.load('models/scaler.pkl')
+        
+        if os.path.exists('models/catboost_model.pkl'):
+            models["CatBoost"] = joblib.load('models/catboost_model.pkl')
+            
+        if os.path.exists('models/lightgbm_model.pkl'):
+            models["LightGBM"] = joblib.load('models/lightgbm_model.pkl')
+            
+        if os.path.exists('models/tabnet_model.zip'):
+            tn = TabNetClassifier()
+            tn.load_model('models/tabnet_model.zip')
+            models["TabNet"] = tn
+            
+        if os.path.exists('models/tabpfn_model.pkl'):
+            models["TabPFN"] = joblib.load('models/tabpfn_model.pkl')
+            
+        print(f"--- SUCCESS: {len(models)} models loaded ---")
+    except Exception as e:
+        print(f"--- ERROR LOADING MODELS: {e} ---")
+
+load_all_models()
 
 @app.route('/')
 def home():
-    # Pass None for inputs and results on first load
-    return render_template('index.html', inputs=None, prediction_text=None)
+    conn = sqlite3.connect('history.db')
+    c = conn.cursor()
+    # FIX: Changed 'age' to 'time_stamp' to match the init_db schema
+    c.execute("SELECT time_stamp, model_used, probability, result FROM predictions ORDER BY id DESC LIMIT 5")
+    history = c.fetchall()
+    conn.close()
+    return render_template('index.html', inputs=None, history=history, prediction_text=None)
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
-        # 1. Fetch values for the AI model in the correct training order
+        choice = request.form.get('ModelChoice')
+        if choice not in models:
+            return f"Error: Model '{choice}' not loaded."
+
+        current_model = models[choice]
+
         feature_list = [
             float(request.form.get('CreditScore')),
             float(request.form.get('Geography')),
@@ -31,28 +80,41 @@ def predict():
             float(request.form.get('Tenure')),
             float(request.form.get('Balance')),
             float(request.form.get('NumOfProducts')),
-            float(request.form.get('HasCrCard', 0)),
-            float(request.form.get('IsActiveMember', 0)),
+            float(1 if request.form.get('HasCrCard') else 0),
+            float(1 if request.form.get('IsActiveMember') else 0),
             float(request.form.get('EstimatedSalary'))
         ]
 
-        # 2. Reshape and Scale
         final_features = np.array(feature_list).reshape(1, -1)
-        scaled_features = scaler.transform(final_features)
-
-        # 3. Predict Class and Probability
-        prediction = model.predict(scaled_features)
-        prob = model.predict_proba(scaled_features)[0][1]
         
-        # 4. Format Output
+        if choice in ["TabNet", "TabPFN"]:
+            final_features = final_features.astype(np.float32)
+
+        scaled_features = scaler.transform(final_features)
+        prediction = current_model.predict(scaled_features)
+        prob = current_model.predict_proba(scaled_features)[0][1]
+        
         result_text = "HIGH RISK" if prediction[0] == 1 else "LOW RISK"
         prob_display = f"{prob * 100:.2f}%"
 
-        # 5. Send results AND the form data back to the UI
+        # Save to Database
+        current_time = datetime.now().strftime("%H:%M:%S")
+        conn = sqlite3.connect('history.db')
+        c = conn.cursor()
+        c.execute("INSERT INTO predictions (time_stamp, model_used, probability, result) VALUES (?, ?, ?, ?)",
+                (current_time, choice, prob_display, result_text))
+        conn.commit()
+
+        # Fetch History
+        c.execute("SELECT time_stamp, model_used, probability, result FROM predictions ORDER BY id DESC LIMIT 5")
+        history = c.fetchall()
+        conn.close()
+
         return render_template('index.html', 
                                prediction_text=result_text, 
-                               prob_text=prob_display,
-                               inputs=request.form) # Keeps the form filled
+                               prob_text=prob_display, 
+                               inputs=request.form, 
+                               history=history)
 
     except Exception as e:
         return f"Error: {str(e)}. Please ensure all fields are filled."

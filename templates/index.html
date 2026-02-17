@@ -3,273 +3,442 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RetentionAI | Dashboard</title>
+    <title>RetentionAI | Enterprise Risk Suite</title>
     <!-- CSS Dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         :root {
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --accent-gold: #d4a017;
             --bank-navy: #003366;
-            --bank-gold: #d4a017;
-            --bg-light: #f0f4f8;
+            --bg-body: #f1f5f9;
         }
 
-        body { background-color: var(--bg-light); font-family: 'Segoe UI', system-ui, sans-serif; }
-        
-        /* Navbar - Premium Look */
-        .navbar { 
-            background-color: var(--bank-navy); 
-            padding: 12px 60px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); margin: 0; }
+
+        /* Sidebar Styling */
+        .sidebar {
+            height: 100vh; width: 280px; position: fixed;
+            top: 0; left: 0; background-color: var(--sidebar-bg);
+            padding: 20px 0; z-index: 1000;
         }
-        .navbar-brand { 
-            color: white !important; 
-            font-size: 22px; 
-            font-weight: 800; 
-            letter-spacing: 1.2px;
+        .sidebar-brand {
+            padding: 10px 30px 30px; color: white !important; font-weight: 800; font-size: 24px;
+            display: block; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.1);
         }
-        /* Modern Highlighted Nav Links */
-        .nav-link { 
-            color: gold !important; 
-            font-size: 14px; 
-            font-weight: 500; 
-            margin-left: 15px; 
-            padding: 8px 20px !important; /* Adds space around the text for the highlight */
-            border-radius: 8px;           /* Makes the highlight rounded */
-            transition: all 0.3s ease;
-            border-bottom: none !important; /* Force remove the underline */
+        .nav-link {
+            color: #94a3b8 !important; padding: 15px 30px; font-size: 14px;
+            font-weight: 500; transition: 0.3s; border-left: 4px solid transparent;
+            cursor: pointer;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: var(--sidebar-hover); color: white !important;
+            border-left-color: var(--accent-gold);
         }
 
-        /* The Highlight effect for the active page */
-        .nav-link.active { 
-            background-color: rgba(255, 255, 255, 0.15); /* Subtle white glass effect */
-            font-weight: 700;
-            opacity: 1;
-        }
+        /* Main Content Area */
+        .main-content { margin-left: 280px; padding: 40px; }
+        .section-view { display: none; }
+        .section-view.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Hover effect for other links */
-        .nav-link:hover {
-             background-color: rgba(255, 255, 255, 0.1);
-            opacity: 1;
-        }
-
-        .main-wrapper { margin-top: 40px; padding: 0 60px; }
-        
-        /* Equal Height Cards logic */
-        .row-flex { display: flex; align-items: stretch; }
-
-        .dashboard-card { 
-            background: white; border-radius: 12px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.04); 
-            border: none; padding: 40px;
+        /* Professional Cards */
+        .glass-card {
+            background: white; border-radius: 16px; padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;
             height: 100%;
         }
-
-        /* Section Titles with the Orange Accent */
-        .section-header {
-            border-left: 5px solid var(--bank-gold);
-            padding-left: 15px;
-            font-weight: 700;
-            color: var(--bank-navy);
-            margin-bottom: 30px;
-            font-size: 18px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .section-title {
+            font-size: 14px; font-weight: 800; color: var(--bank-navy);
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;
+            display: flex; align-items: center;
         }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; margin-left: 15px; }
 
-        /* Input Group Polish */
-        label { font-size: 12px; font-weight: 700; color: #5a6a85; margin-bottom: 6px; }
-        .input-group-text { 
-            background-color: #fafbfc; border-right: none; color: #a1aab2; display: flex;
-            align-items: center; width: 48px; justify-content: center; font-size: 14px;
-        }
+        /* Form Styling */
+        label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
         .form-control, .form-select { 
-            border-left: none; background-color: #fafbfc; 
-            padding: 12px; font-size: 15px; border-color: #e2e8f0;
+            padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1;
+            background-color: #f8fafc; font-size: 14px;
         }
-        .form-control:focus, .form-select:focus { 
-            box-shadow: none; border-color: var(--bank-navy); background-color: white; 
+        .form-control:focus { border-color: var(--bank-navy); box-shadow: none; background: white; }
+
+        /* Scorecard Styles */
+        .analysis-card { background: #ffffff; border-radius: 20px; padding: 30px; border: 1px solid #e2e8f0; text-align: center; }
+        .risk-value { font-size: 58px; font-weight: 800; color: #1e293b; line-height: 1; }
+        .status-pill { display: inline-block; padding: 6px 20px; border-radius: 100px; font-weight: 800; font-size: 11px; text-transform: uppercase; margin-bottom: 20px; }
+        .status-high { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+        .status-low { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+        .risk-meter { height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin: 20px 0; }
+        .risk-fill { height: 100%; transition: width 1.5s ease-in-out; }
+
+        /* Audit Rows */
+        .audit-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 11px; border-bottom: 1px dashed #f1f5f9; }
+        .audit-model { font-weight: 700; color: #334155; }
+
+        /* XAI Zoom Effect */
+        .zoom-img { transition: transform 0.3s ease; cursor: zoom-in; }
+        .zoom-img:hover { transform: scale(1.02); border-color: var(--accent-gold) !important; }
+
+        .btn-predict { background: var(--bank-navy); color: white; border: none; padding: 16px; border-radius: 10px; font-weight: 700; width: 100%; margin-top: 20px; }
+        .btn-predict:hover { background: #002244; transform: translateY(-2px); }
+        /* XAI Grid Styling */
+        .xai-grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 2 columns */
+            gap: 15px;
+        }
+        .xai-item {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+        .xai-item label {
+            font-size: 10px;
+            font-weight: 800;
+            color: var(--bank-navy);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .xai-img-wrapper {
+            height: 220px; /* Forces uniform height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: white;
+            border-radius: 8px;
+        }
+        .xai-img-wrapper img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain; /* Prevents stretching */
+            cursor: zoom-in;
+            transition: 0.3s;
+        }
+        .xai-img-wrapper img:hover {
+            transform: scale(1.05);
         }
 
-        /* Switch Styling */
-        .form-check-input:checked { background-color: #0d6efd; border-color: #0d6efd; }
-        .switch-label { font-size: 14px; font-weight: 600; color: #334155; margin-left: 8px; }
-
-        .btn-predict { 
-            background-color: var(--bank-navy); color: white; border-radius: 8px;
-            padding: 15px; width: 100%; font-weight: 800; border: none; 
-            margin-top: 25px; letter-spacing: 1px; transition: all 0.3s ease;
+        /* Compact Triggers Card */
+        .triggers-card {
+            background: white;
+            border-left: 4px solid var(--accent-gold);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
         }
-        .btn-predict:hover { background-color: #002244; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,51,102,0.2); }
-
-        /* Right Panel - Result Centering */
-        .result-panel { 
-            display: flex; flex-direction: column; 
-            text-align: center; justify-content: space-between;
-        }
-        .engine-label { color: #64748b; font-weight: 800; font-size: 14px; letter-spacing: 1.5px; }
-        
-        .result-display {
-            flex-grow: 1; display: flex; flex-direction: column;
-            justify-content: center; align-items: center;
-        }
-
-        .risk-badge {
-            padding: 8px 30px; border-radius: 50px; font-weight: 900; 
-            font-size: 13px; margin-bottom: 20px; text-transform: uppercase;
-        }
-        .bg-low { background-color: #198754; color: white; }
-        .bg-high { background-color: #dc3545; color: white; }
-        
-        .prob-value { font-size: 82px; font-weight: 800; color: #1e293b; line-height: 1; margin: 10px 0; }
-        .prob-desc { color: #64748b; font-weight: 700; font-size: 16px; }
-
-        .footer-note { font-size: 11px; color: #94a3b8; border-top: 1px solid #f1f5f9; padding-top: 20px; }
-
-        /* Remove arrows from number inputs */
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     </style>
 </head>
 <body>
 
-    <!-- Professional Navbar -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">RetentionAI</a>
-            <div class="ms-auto d-flex">
-                <a class="nav-link active" href="#"><i class="fa-regular fa-pen-to-square me-1"></i> Risk Assessment</a>
-                <a class="nav-link" href="#"><i class="fa-solid fa-chart-line me-1"></i> Model Comparison</a>
-                <a class="nav-link" href="#"><i class="fa-solid fa-microscope me-1"></i> XAI Analysis</a>
-            </div>
+    <!-- SIDEBAR NAVIGATION -->
+    <div class="sidebar shadow">
+        <a href="#" class="sidebar-brand"><i class="fa-solid fa-building-columns me-2"></i> RetentionAI</a>
+        <div class="nav flex-column mt-4">
+            <a class="nav-link active" onclick="showSection('risk-assessment', this)">
+                <i class="fa-solid fa-user-shield me-3"></i> Risk Assessment
+            </a>
+            <a class="nav-link" onclick="showSection('model-comparison', this)">
+                <i class="fa-solid fa-chart-bar me-3"></i> Architecture Benchmarking
+            </a>
+            <a class="nav-link" onclick="showSection('xai-analysis', this)">
+                <i class="fa-solid fa-microscope me-3"></i> Global Risk Intelligence
+            </a>
         </div>
-    </nav>
-
-    <div class="container-fluid main-wrapper">
-        <form action="/predict" method="POST">
-        <div class="row g-4 row-flex">
-            
-            <!-- Left Card: Inputs -->
-            <div class="col-lg-8">
-                <div class="dashboard-card">
-                    <div class="section-header">Customer Information</div>
-                    <div class="row g-4 mb-5">
-                        <div class="col-md-4">
-                            <label>Location</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-globe"></i></span>
-                                <select name="Geography" class="form-select">
-                                    <option value="0" {{ 'selected' if inputs and inputs['Geography'] == '0' }}>France</option>
-                                    <option value="1" {{ 'selected' if inputs and inputs['Geography'] == '1' }}>Germany</option>
-                                    <option value="2" {{ 'selected' if inputs and inputs['Geography'] == '2' }}>Spain</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label>Gender</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-venus-mars"></i></span>
-                                <select name="Gender" class="form-select">
-                                    <option value="1" {{ 'selected' if inputs and inputs['Gender'] == '1' }}>Male</option>
-                                    <option value="0" {{ 'selected' if inputs and inputs['Gender'] == '0' }}>Female</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label>Age</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-                                <input type="number" name="Age" class="form-control" value="{{ inputs['Age'] if inputs else 35 }}">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="section-header">Financial & Engagement Profile</div>
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <label>Credit Score</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-regular fa-star"></i></span>
-                                <input type="number" name="CreditScore" class="form-control" value="{{ inputs['CreditScore'] if inputs else 650 }}">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <label>Account Balance ($)</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-building-columns"></i></span>
-                                <input type="number" name="Balance" class="form-control" value="{{ inputs['Balance'] if inputs else 50000 }}">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label>Tenure (Years)</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-regular fa-clock"></i></span>
-                                <input type="number" name="Tenure" class="form-control" value="{{ inputs['Tenure'] if inputs else 5 }}">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label>Products Used</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-briefcase"></i></span>
-                                <input type="number" name="NumOfProducts" class="form-control" value="{{ inputs['NumOfProducts'] if inputs else 1 }}">
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label>Estimated Salary ($)</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fa-solid fa-wallet"></i></span>
-                                <input type="number" name="EstimatedSalary" class="form-control" value="{{ inputs['EstimatedSalary'] if inputs else 75000 }}">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col-md-6 d-flex align-items-center">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="HasCrCard" value="1" {{ 'checked' if not inputs or inputs['HasCrCard'] }}>
-                                <label class="switch-label">Has Credit Card</label>
-                            </div>
-                        </div>
-                        <div class="col-md-6 d-flex align-items-center">
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" name="IsActiveMember" value="1" {{ 'checked' if not inputs or inputs['IsActiveMember'] }}>
-                                <label class="switch-label">Is Active Member</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-predict"> RUN PREDICTION</button>
-                </div>
-            </div>
-
-            <!-- Right Card: Prediction Result -->
-            <div class="col-lg-4">
-                <div class="dashboard-card result-panel">
-                    <h6 class="engine-label">PREDICTION ENGINE</h6>
-                    
-                    <div class="result-display">
-                        {% if prediction_text %}
-                            <div class="risk-badge {{ 'bg-high' if prediction_text == 'HIGH RISK' else 'bg-low' }}">
-                                {{ prediction_text }}
-                            </div>
-                            <div class="prob-value">{{ prob_text }}</div>
-                            <div class="prob-desc">Churn Probability</div>
-                        {% else %}
-                            <div class="opacity-25 py-5">
-                                <i class="fa-solid fa-tower-broadcast fa-4x mb-3"></i>
-                                <p class="fw-bold">Awaiting Data Entry...</p>
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div class="footer-note">
-                        <i class="fa-solid fa-circle-info me-1"></i> Powered by CatBoost SOTA Architecture | 91.09% F1-Score
-                    </div>
-                </div>
-            </div>
-        </div>
-        </form>
     </div>
 
+    <!-- MAIN CONTENT AREA -->
+    <div class="main-content">
+        
+        <!-- SECTION 1: RISK ASSESSMENT -->
+        <div id="risk-assessment" class="section-view active">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">Customer Risk Analysis</h2>
+                <span class="badge bg-secondary p-2"><i class="fa-solid fa-clock-rotate-left me-1"></i> Live Risk Monitor</span>
+            </div>
+
+            <form action="/predict" method="POST">
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <div class="glass-card">
+                            <div class="mb-4">
+                                <label>Target SOTA Architecture</label>
+                                <select name="ModelChoice" class="form-select fw-bold text-primary">
+                                    <option value="CatBoost" {{'selected' if inputs and inputs['ModelChoice']=='CatBoost'}}>CatBoost (Symmetric Trees)</option>
+                                    <option value="LightGBM" {{'selected' if inputs and inputs['ModelChoice']=='LightGBM'}}>LightGBM (Leaf-wise)</option>
+                                    <option value="TabNet" {{'selected' if inputs and inputs['ModelChoice']=='TabNet'}}>TabNet (Deep Learning)</option>
+                                    <option value="TabPFN" {{'selected' if inputs and inputs['ModelChoice']=='TabPFN'}}>TabPFN (Transformer)</option>
+                                </select>
+                            </div>
+
+                            <div class="section-title">Customer Profile</div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-4">
+                                    <label>Geography</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-earth-americas"></i></span>
+                                        <select name="Geography" class="form-select border-start-0">
+                                            <option value="0" {{'selected' if inputs and inputs['Geography']=='0'}}>France</option>
+                                            <option value="1" {{'selected' if inputs and inputs['Geography']=='1'}}>Germany</option>
+                                            <option value="2" {{'selected' if inputs and inputs['Geography']=='2'}}>Spain</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Gender</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-venus-mars"></i></span>
+                                        <select name="Gender" class="form-select border-start-0">
+                                            <option value="1" {{'selected' if inputs and inputs['Gender']=='1'}}>Male</option>
+                                            <option value="0" {{'selected' if inputs and inputs['Gender']=='0'}}>Female</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Age</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-user"></i></span>
+                                        <input type="number" name="Age" class="form-control border-start-0" value="{{inputs['Age'] if inputs else 35}}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-title">Financial & Engagement Metrics</div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label>Credit Score</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-award"></i></span>
+                                        <input type="number" name="CreditScore" class="form-control border-start-0" value="{{inputs['CreditScore'] if inputs else 650}}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label>Account Balance ($)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-building-columns"></i></span>
+                                        <input type="number" name="Balance" class="form-control border-start-0" value="{{inputs['Balance'] if inputs else 50000}}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Tenure (Years)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-calendar-check"></i></span>
+                                        <input type="number" name="Tenure" class="form-control border-start-0" value="{{inputs['Tenure'] if inputs else 5}}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Number of Products</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-briefcase"></i></span>
+                                        <input type="number" name="NumOfProducts" class="form-control border-start-0" value="{{inputs['NumOfProducts'] if inputs else 1}}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label>Estimated Salary ($)</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fa-solid fa-wallet"></i></span>
+                                        <input type="number" name="EstimatedSalary" class="form-control border-start-0" value="{{inputs['EstimatedSalary'] if inputs else 75000}}">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="HasCrCard" value="1" {{'checked' if not inputs or inputs['HasCrCard']}}>
+                                        <label class="switch-label fw-bold">Has Active Credit Card</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" name="IsActiveMember" value="1" {{'checked' if not inputs or inputs['IsActiveMember']}}>
+                                        <label class="switch-label fw-bold">Is Active Bank Member</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-predict">GENERATE RISK REPORT</button>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Scorecard -->
+                    <div class="col-lg-4">
+                        <div class="analysis-card h-100 d-flex flex-column shadow-sm">
+                            <h6 class="engine-header">Risk Intelligence Engine</h6>
+                            {% if prediction_text %}
+                                <div class="risk-score-container">
+                                    <div class="status-pill {{ 'status-high' if prediction_text == 'HIGH RISK' else 'status-low' }}">
+                                        <i class="fa-solid {{ 'fa-triangle-exclamation' if prediction_text == 'HIGH RISK' else 'fa-check-circle' }} me-2"></i>
+                                        {{ prediction_text }}
+                                    </div>
+                                    <div class="risk-value">{{ prob_text }}</div>
+                                    <div class="small text-muted fw-bold mb-3">Churn Probability Score</div>
+                                    <div class="risk-meter">
+                                        <div class="risk-fill {{ 'bg-danger' if prediction_text == 'HIGH RISK' else 'bg-success' }}" style="width: {{ prob_text }}"></div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="my-auto opacity-25">
+                                    <i class="fa-solid fa-shield-heart fa-5x mb-3"></i>
+                                    <p class="fw-bold">Awaiting Customer Data...</p>
+                                </div>
+                            {% endif %}
+                            <div class="audit-section mt-auto">
+                                <h6 class="text-muted small fw-bold border-bottom pb-2 mb-3">RECENT SYSTEM AUDITS</h6>
+                                {% for row in history %}
+                                <div class="audit-row">
+                                    <span class="text-muted" style="font-family: monospace;">{{ row[0] }}</span>
+                                    <span class="audit-model">{{ row[1] }}</span>
+                                    <span class="fw-bold {{ 'text-danger' if row[3] == 'HIGH RISK' else 'text-success' }}" style="font-size: 10px;">{{ row[3] }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- SECTION 2: ARCHITECTURE BENCHMARKING -->
+        <div id="model-comparison" class="section-view">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">Architecture Benchmarking</h2>
+                <span class="badge bg-primary px-3 py-2">System Audit: Active</span>
+            </div>
+            <div class="glass-card">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr><th>Model Architecture</th><th>F1-Score</th><th>Training Time</th><th>Inference Speed</th><th>Resource Usage</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td><span class="fw-bold">CatBoost</span> <span class="badge bg-success ms-2" style="font-size: 8px;">CHAMPION</span></td><td class="text-success fw-bold">91.09%</td><td>10.7s</td><td><i class="fa-solid fa-bolt text-warning"></i> Ultra Fast</td><td>Low</td></tr>
+                        <tr><td><span class="fw-bold">LightGBM</span></td><td class="fw-bold">91.05%</td><td>4.3s</td><td><i class="fa-solid fa-bolt text-warning"></i> Ultra Fast</td><td>Very Low</td></tr>
+                        <tr><td><span class="fw-bold">TabPFN</span></td><td class="fw-bold">85.30%</td><td>0.62s</td><td><i class="fa-solid fa-gauge-high text-primary"></i> High</td><td>Medium</td></tr>
+                        <tr><td><span class="fw-bold">TabNet</span></td><td class="fw-bold">81.54%</td><td>588s</td><td><i class="fa-solid fa-clock text-muted"></i> Moderate</td><td>High</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SECTION 3: GLOBAL RISK INTELLIGENCE -->
+<div id="xai-analysis" class="section-view">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">Global Risk Intelligence</h2>
+            <p class="text-muted small mb-0">Consensus analysis of behavioral churn drivers across 1.6 Lakh records.</p>
+        </div>
+        <span class="badge bg-light text-dark border p-2 small">XAI Engine: SHAP v0.42</span>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left: Compact Triggers -->
+        <div class="col-xl-3 col-lg-4">
+            <div class="triggers-card">
+                <h6 class="fw-bold mb-3" style="font-size: 13px; color: #1e293b;">TOP ATTRITION TRIGGERS</h6>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small fw-bold">1. Customer Age</span>
+                        <span class="badge bg-danger" style="font-size: 9px;">CRITICAL</span>
+                    </div>
+                    <div class="progress" style="height: 4px;"><div class="progress-bar bg-danger" style="width: 95%"></div></div>
+                </div>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small fw-bold">2. Product Count</span>
+                        <span class="badge bg-warning text-dark" style="font-size: 9px;">HIGH</span>
+                    </div>
+                    <div class="progress" style="height: 4px;"><div class="progress-bar bg-warning" style="width: 75%"></div></div>
+                </div>
+                <div class="mb-4">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small fw-bold">3. Member Activity</span>
+                        <span class="badge bg-info text-white" style="font-size: 9px;">MEDIUM</span>
+                    </div>
+                    <div class="progress" style="height: 4px;"><div class="progress-bar bg-info" style="width: 50%"></div></div>
+                </div>
+                <p class="text-muted mt-4" style="font-size: 10px; line-height: 1.4;">
+                    <i class="fa-solid fa-circle-check text-success me-1"></i>
+                    Consensus ranking validated across Boosting, Neural, and Transformer architectures.
+                </p>
+            </div>
+        </div>
+
+        <!-- Right: 2x2 Organized Grid -->
+        <div class="col-xl-9 col-lg-8">
+            <div class="glass-card p-3">
+                <div class="xai-grid-container">
+                    <!-- CatBoost -->
+                    <div class="xai-item">
+                        <label>CatBoost (Symmetric Trees)</label>
+                        <div class="xai-img-wrapper">
+                            <img src="{{ url_for('static', filename='shap_catboost.png') }}" onclick="zoomImage(this.src)">
+                        </div>
+                    </div>
+                    <!-- TabNet -->
+                    <div class="xai-item">
+                        <label>TabNet (Deep Learning)</label>
+                        <div class="xai-img-wrapper">
+                            <img src="{{ url_for('static', filename='shap_tabnet.png') }}" onclick="zoomImage(this.src)">
+                        </div>
+                    </div>
+                    <!-- LightGBM -->
+                    <div class="xai-item">
+                        <label>LightGBM (Leaf-wise)</label>
+                        <div class="xai-img-wrapper">
+                            <img src="{{ url_for('static', filename='shap_lightgbm.png') }}" onclick="zoomImage(this.src)">
+                        </div>
+                    </div>
+                    <!-- TabPFN -->
+                    <div class="xai-item">
+                        <label>TabPFN (Transformer)</label>
+                        <div class="xai-img-wrapper">
+                            <img src="{{ url_for('static', filename='shap_tabpfn.png') }}" onclick="zoomImage(this.src)">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <!-- Image Zoom Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-body text-center p-0">
+                    <img src="" id="modalImage" class="img-fluid rounded shadow-lg" style="max-height: 90vh;">
+                    <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showSection(sectionId, element) {
+            document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            element.classList.add('active');
+        }
+        function zoomImage(src) {
+            document.getElementById('modalImage').src = src;
+            new bootstrap.Modal(document.getElementById('imageModal')).show();
+        }
+        window.onload = function() {
+            {% if prediction_text %}
+                showSection('risk-assessment', document.querySelector('.nav-link'));
+            {% endif %}
+        };
+    </script>
 </body>
 </html>
