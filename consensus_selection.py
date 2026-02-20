@@ -2,71 +2,77 @@ import pandas as pd
 import numpy as np
 import joblib
 import shap
+import os
 import time
 from pytorch_tabnet.tab_model import TabNetClassifier
 
-# 1. Load Data and Models
-print("Loading data...")
+# 1. Setup
+print("--- Initializing Consensus Feature Selection ---")
 df = pd.read_csv('data/Processed_Churn_Data.csv')
 X = df.drop('Exited', axis=1)
 feature_names = X.columns.tolist()
 
-# Load all 4 models
-models = {
-    "CatBoost": joblib.load('models/catboost_model.pkl'),
-    "LightGBM": joblib.load('models/lightgbm_model.pkl'),
-    "TabPFN": joblib.load('models/tabpfn_model.pkl')
-}
-tn = TabNetClassifier(); tn.load_model('models/tabnet_model.zip')
-models["TabNet"] = tn
+# 2. Load Models
+print("Loading models...")
+cb = joblib.load('models/catboost_model.pkl')
+lgb = joblib.load('models/lightgbm_model.pkl')
+pfn = joblib.load('models/tabpfn_model.pkl')
+tn = TabNetClassifier()
+tn.load_model('models/tabnet_model.zip')
 
-print("--- Initializing Fast Consensus Audit ---")
-all_importances = []
+models = {"CatBoost": cb, "LightGBM": lgb, "TabNet": tn, "TabPFN": pfn}
 
-# We use the Median as a single background point to speed up KernelExplainer
-background_median = X.median().values.reshape(1, -1)
+# 3. Calculate Importance
+importance_results = {}
+
+# Use small samples for speed
+X_sample_tree = X.sample(100, random_state=42)
+X_sample_kernel = X.sample(5, random_state=42) 
+background = X.median().values.reshape(1, -1)
 
 for name, model in models.items():
-    start = time.time()
-    print(f"Auditing {name}...", end=" ", flush=True)
+    print(f"Processing {name}...")
     
     if name in ["CatBoost", "LightGBM"]:
-        # TreeExplainer is already fast
         explainer = shap.TreeExplainer(model)
-        sv = explainer.shap_values(X.sample(100, random_state=42))
+        raw_shap = explainer.shap_values(X_sample_tree)
     else:
-        # KernelExplainer for TabNet/TabPFN using the Median Trick
-        # We only need 10 samples to get a clear ranking consensus
-        explainer = shap.KernelExplainer(model.predict_proba, background_median)
-        sv = explainer.shap_values(X.sample(10, random_state=42), nsamples=100)
-    
-    if isinstance(sv, list): sv = sv[1]
-    
-    # Calculate Importance (Mean Absolute SHAP)
-    importance = np.abs(sv).mean(0)
-    # Normalize (0 to 1) so we can average different models fairly
-    importance = importance / np.sum(importance)
-    all_importances.append(importance)
-    
-    print(f"Done ({time.time() - start:.2f}s)")
+        # Wrapper for TabNet
+        def predict_fn(data): return model.predict_proba(data.astype(np.float32))
+        explainer = shap.KernelExplainer(predict_fn if name == "TabNet" else model.predict_proba, background)
+        raw_shap = explainer.shap_values(X_sample_kernel, nsamples=100)
 
-# 2. Calculate the Consensus Score
-consensus_matrix = np.array(all_importances)
-mean_importance = np.mean(consensus_matrix, axis=0)
+    # --- THE FIX FOR THE 20 COLUMN ERROR ---
+    # If it's a list, it's [Class 0, Class 1]. We take index 1 (Churn).
+    if isinstance(raw_shap, list):
+        s_vals = np.array(raw_shap[1])
+    # If it's a 3D array (N, Features, Classes), we take the second class slice
+    elif len(np.array(raw_shap).shape) == 3:
+        s_vals = np.array(raw_shap)[:, :, 1]
+    else:
+        s_vals = np.array(raw_shap)
 
-# 3. Create Results Table
-results = pd.DataFrame({
-    'Feature': feature_names,
-    'Consensus_Score': mean_importance
-}).sort_values(by='Consensus_Score', ascending=False)
+    # Calculate mean absolute importance for exactly 10 features
+    avg_imp = np.abs(s_vals).mean(0)
+    
+    # Ensure it's a flat 1D array of length 10
+    importance_results[name] = avg_imp.flatten()
+
+# 4. Create the Table
+# We build the DataFrame using the dictionary keys as columns and feature_names as index
+importance_df = pd.DataFrame(importance_results, index=feature_names)
+
+# Calculate the final Consensus Score
+importance_df['Consensus_Score'] = importance_df.mean(axis=1)
+importance_df = importance_df.sort_values(by='Consensus_Score', ascending=False)
 
 print("\n" + "="*50)
 print("SOTA CONSENSUS FEATURE RANKING")
 print("="*50)
-print(results)
+print(importance_df)
 print("="*50)
 
-# 4. Save the Top 7
-top_7 = results.head(7)['Feature'].tolist()
-joblib.dump(top_7, 'models/selected_features.pkl')
-print(f"\n✅ TOP 7 FEATURES SAVED: {top_7}")
+# Save for your report
+if not os.path.exists('static'): os.makedirs('static')
+importance_df.to_csv('static/feature_importance_consensus.csv')
+print("Table saved to static/feature_importance_consensus.csv")
