@@ -1,1 +1,0 @@
-"Schema: id, time_stamp, model_used, probability, result" 

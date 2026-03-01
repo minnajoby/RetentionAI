@@ -1,1 +1,0 @@
-"Research: Evaluating Symmetric Trees vs Leaf-wise growth parameters." 

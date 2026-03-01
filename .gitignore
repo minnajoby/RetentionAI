@@ -1,3 +1,4 @@
 venv/
 data/Processed_Churn_Data.csv
 __pycache__/
+.env

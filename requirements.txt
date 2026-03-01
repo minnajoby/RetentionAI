@@ -2,8 +2,12 @@ pandas
 numpy
 scikit-learn
 catboost
+lightgbm
 flask
 joblib
 imbalanced-learn
-matplotlib
+torch
+pytorch-tabnet
+tabpfn
 shap
+matplotlib

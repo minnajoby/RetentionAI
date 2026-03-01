@@ -4,7 +4,6 @@ import shap
 import joblib
 import matplotlib.pyplot as plt
 import os
-import torch
 
 # 1. Load Data
 print("Loading data...")
@@ -21,7 +20,6 @@ lgb = joblib.load('models/lightgbm_model.pkl')
 from pytorch_tabnet.tab_model import TabNetClassifier
 tn = TabNetClassifier()
 tn.load_model('models/tabnet_model.zip')
-pfn = joblib.load('models/tabpfn_model.pkl')
 
 if not os.path.exists('static'): os.makedirs('static')
 
@@ -71,18 +69,4 @@ shap.summary_plot(shap_values_tn, X_sample_tabnet, show=False, plot_type="dot")
 plt.title("TabNet Feature Importance (SHAP)", pad=20)
 plt.savefig('static/shap_tabnet.png', bbox_inches='tight')
 plt.close()
-
-# --- D. TabPFN (Fixed Logic) ---
-print("Explaining TabPFN (Transformer)...")
-X_sample_pfn = X.sample(100, random_state=42)
-explainer_pfn = shap.KernelExplainer(pfn.predict_proba, background)
-shap_values_pfn = explainer_pfn.shap_values(X_sample_pfn)
-
-if isinstance(shap_values_pfn, list):
-    shap_values_pfn = shap_values_pfn[1]
-
-plt.figure(figsize=(10, 6))
-shap.summary_plot(shap_values_pfn, X_sample_pfn, show=False, plot_type="dot")
-plt.title("TabPFN Feature Importance (SHAP)", pad=20)
-plt.savefig('static/shap_tabpfn.png', bbox_inches='tight')
-plt.close()
+print("--- SUCCESS: SHAP plots saved to static/ ---")
