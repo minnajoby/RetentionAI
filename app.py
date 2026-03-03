@@ -4,120 +4,128 @@ import joblib
 import numpy as np
 import sqlite3
 import os
+import pandas as pd 
+import shap 
+import matplotlib.pyplot as plt 
 from pytorch_tabnet.tab_model import TabNetClassifier
 
+# --- Set Matplotlib to non-interactive mode for web safety ---
+plt.switch_backend('Agg')
+
 app = Flask(__name__)
+
+# --- CONFIGURATION ---
+os.environ["TABPFN_ALLOW_CPU_LARGE_DATASET"] = "1"
+os.environ["HF_TOKEN"] = "your_huggingface_token_here" 
 
 # --- DATABASE SETUP ---
 def init_db():
     conn = sqlite3.connect('history.db')
     c = conn.cursor()
-    # Schema: id, time_stamp, model_used, probability, result
     c.execute('''CREATE TABLE IF NOT EXISTS predictions
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  time_stamp TEXT,
-                  model_used TEXT, 
-                  probability TEXT, 
-                  result TEXT)''')
+                  time_stamp TEXT, model_used TEXT, probability TEXT, result TEXT)''')
     conn.commit()
     conn.close()
 
 init_db()
 
-# --- GLOBAL MODELS DICTIONARY ---
+# --- GLOBAL MODELS & SCALER ---
 models = {}
-scaler = None
+scaler_7 = None 
 
-def load_all_models():
-    global scaler
+def load_models():
+    global scaler_7
     try:
-        scaler = joblib.load('models/scaler.pkl')
+        scaler_7 = joblib.load('models/scaler_7.pkl')
+        models["CatBoost"] = joblib.load('models/catboost_7.pkl')
+        models["LightGBM"] = joblib.load('models/lightgbm_7.pkl')
+        models["TabPFN"] = joblib.load('models/tabpfn_7.pkl')
         
-        if os.path.exists('models/catboost_model.pkl'):
-            models["CatBoost"] = joblib.load('models/catboost_model.pkl')
-            
-        if os.path.exists('models/lightgbm_model.pkl'):
-            models["LightGBM"] = joblib.load('models/lightgbm_model.pkl')
-            
-        if os.path.exists('models/tabnet_model.zip'):
-            tn = TabNetClassifier()
-            tn.load_model('models/tabnet_model.zip')
-            models["TabNet"] = tn
-            
-        if os.path.exists('models/tabpfn_model.pkl'):
-            models["TabPFN"] = joblib.load('models/tabpfn_model.pkl')
-            
-        print(f"--- SUCCESS: {len(models)} models loaded ---")
+        tn = TabNetClassifier()
+        tn.load_model('models/tabnet_7.zip')
+        models["TabNet"] = tn
+        print("--- ALL 7-FEATURE MODELS AND SCALER READY ---")
     except Exception as e:
-        print(f"--- ERROR LOADING MODELS: {e} ---")
+        print(f"--- MODEL LOADING ERROR: {e} ---")
 
-load_all_models()
+load_models()
 
 @app.route('/')
 def home():
-    conn = sqlite3.connect('history.db')
-    c = conn.cursor()
-    # FIX: Changed 'age' to 'time_stamp' to match the init_db schema
+    conn = sqlite3.connect('history.db'); c = conn.cursor()
     c.execute("SELECT time_stamp, model_used, probability, result FROM predictions ORDER BY id DESC LIMIT 5")
-    history = c.fetchall()
-    conn.close()
-    return render_template('index.html', inputs=None, history=history, prediction_text=None)
+    history = c.fetchall(); conn.close()
+    return render_template('index.html', inputs=None, history=history)
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    conn = sqlite3.connect('history.db'); c = conn.cursor()
+    c.execute("SELECT time_stamp, model_used, probability, result FROM predictions ORDER BY id DESC LIMIT 5")
+    history = c.fetchall(); conn.close()
+
     try:
-        choice = request.form.get('ModelChoice')
-        if choice not in models:
-            return f"Error: Model '{choice}' not loaded."
+        choice = request.form.get('ModelChoice', 'CatBoost')
+        current_model = models.get(choice, models['CatBoost'])
 
-        current_model = models[choice]
+        feature_names = ['Geography','Gender','Age','Tenure','Balance','NumOfProducts','IsActiveMember']
+        display_names = {'Geography': 'Location', 'Gender': 'Gender', 'Age': 'Customer Age', 
+                         'Tenure': 'Tenure', 'Balance': 'Account Balance', 
+                         'NumOfProducts': 'Product Count', 'IsActiveMember': 'Membership Activity'}
 
-        feature_list = [
-            float(request.form.get('CreditScore')),
-            float(request.form.get('Geography')),
-            float(request.form.get('Gender')),
-            float(request.form.get('Age')),
-            float(request.form.get('Tenure')),
-            float(request.form.get('Balance')),
-            float(request.form.get('NumOfProducts')),
-            float(1 if request.form.get('HasCrCard') else 0),
-            float(1 if request.form.get('IsActiveMember') else 0),
-            float(request.form.get('EstimatedSalary'))
-        ]
+        # 1. Validation Loop (No Defaults)
+        feature_list = []
+        for f in feature_names:
+            val = request.form.get(f)
+            if val is None or val.strip() == "":
+                return render_template('index.html', error_msg="All fields are required.", history=history, inputs=request.form)
+            feature_list.append(float(val))
 
-        final_features = np.array(feature_list).reshape(1, -1)
-        
-        if choice in ["TabNet", "TabPFN"]:
-            final_features = final_features.astype(np.float32)
+        # 2. Process Data
+        raw_features = np.array(feature_list).reshape(1, -1)
+        scaled_features = scaler_7.transform(raw_features)
+        if choice in ["TabNet", "TabPFN"]: scaled_features = scaled_features.astype(np.float32)
 
-        scaled_features = scaler.transform(final_features)
+        # 3. Predict
         prediction = current_model.predict(scaled_features)
-        prob = current_model.predict_proba(scaled_features)[0][1]
+        prob_value = float(current_model.predict_proba(scaled_features)[0][1])
+        res_text = "HIGH RISK" if prediction[0] == 1 else "LOW RISK"
+        prob_display = f"{prob_value * 100:.2f}%"
+
+        # 4. Local XAI Waterfall Plot
+        explainer = shap.TreeExplainer(models["CatBoost"])
+        X_explain = pd.DataFrame(scaled_features, columns=feature_names)
+        shap_obj = explainer(X_explain)
         
-        result_text = "HIGH RISK" if prediction[0] == 1 else "LOW RISK"
-        prob_display = f"{prob * 100:.2f}%"
+        plt.figure(figsize=(8, 4))
+        shap.plots.waterfall(shap_obj[0], show=False)
+        plt.title(f"Risk Factor Decomposition", pad=20, fontsize=10, fontweight='bold')
+        plt.savefig('static/local_explanation.png', bbox_inches='tight', dpi=100)
+        plt.close()
 
-        # Save to Database
+        # 5. AI Narrative Generation
+        vals = shap_obj.values[0]
+        impact_dict = dict(zip(feature_names, vals))
+        top_risk = max(impact_dict, key=impact_dict.get)
+        top_stable = min(impact_dict, key=impact_dict.get)
+
+        risk_reason = f"The primary driver for churn risk is {display_names[top_risk]}."
+        stable_reason = f"The strongest factor for retention is {display_names[top_stable]}."
+
+        # 6. Database Log (Including Probability)
         current_time = datetime.now().strftime("%H:%M:%S")
-        conn = sqlite3.connect('history.db')
-        c = conn.cursor()
+        conn = sqlite3.connect('history.db'); c = conn.cursor()
         c.execute("INSERT INTO predictions (time_stamp, model_used, probability, result) VALUES (?, ?, ?, ?)",
-                (current_time, choice, prob_display, result_text))
+                  (current_time, choice, prob_display, res_text))
         conn.commit()
-
-        # Fetch History
         c.execute("SELECT time_stamp, model_used, probability, result FROM predictions ORDER BY id DESC LIMIT 5")
-        history = c.fetchall()
-        conn.close()
+        history = c.fetchall(); conn.close()
 
-        return render_template('index.html', 
-                               prediction_text=result_text, 
-                               prob_text=prob_display, 
-                               inputs=request.form, 
-                               history=history)
+        return render_template('index.html', prediction_text=res_text, prob_text=prob_display, 
+                               inputs=request.form, history=history, risk_reason=risk_reason, stable_reason=stable_reason)
 
     except Exception as e:
-        return f"Error: {str(e)}. Please ensure all fields are filled."
+        return render_template('index.html', error_msg=f"System Error: {str(e)}", history=history)
 
 if __name__ == "__main__":
     app.run(debug=True)

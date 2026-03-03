@@ -56,7 +56,6 @@ def save_optimized_bar(model_func, name, filename, is_tree=False, tree_model=Non
         plt.barh(range(len(indices)), importances[indices], color='#d4a017', align='center')
         plt.yticks(range(len(indices)), [feature_names[i] for i in indices], fontsize=12, fontweight='bold')
         
-        plt.title(f"{name} (Optimized Engine)", pad=25, fontsize=20, fontweight='bold', color='#003366')
         plt.xlabel("Mean Absolute SHAP Value (Global Impact)", fontsize=12)
         plt.grid(axis='x', linestyle='--', alpha=0.4)
         
