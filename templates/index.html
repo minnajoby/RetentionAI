@@ -6,169 +6,569 @@
     <title>RetentionAI | Enterprise Risk Suite</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
     <style>
-        :root { --sidebar-bg: #0f172a; --sidebar-hover: #1e293b; --accent-gold: #d4a017; --bank-navy: #003366; --bg-body: #f1f5f9; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); margin: 0; }
-        .sidebar { height: 100vh; width: 280px; position: fixed; top: 0; left: 0; background: var(--sidebar-bg); padding: 20px 0; z-index: 1000; }
-        .sidebar-brand { padding: 10px 30px 30px; color: white !important; font-weight: 800; font-size: 24px; display: block; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .nav-link { color: #94a3b8 !important; padding: 15px 30px; font-size: 14px; font-weight: 500; transition: 0.3s; border-left: 4px solid transparent; cursor: pointer; }
-        .nav-link:hover, .nav-link.active { background: var(--sidebar-hover); color: white !important; border-left-color: var(--accent-gold); }
-        .main-content { margin-left: 280px; padding: 40px; min-height: 100vh; }
-        .section-view { display: none; }
-        .section-view.active { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .glass-card { background: white; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
-        .section-title { font-size: 13px; font-weight: 800; color: var(--bank-navy); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: flex; align-items: center; }
-        .section-title::after { content: ""; flex: 1; height: 1px; background: #e2e8f0; margin-left: 15px; }
-        label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
-        .form-control, .form-select { padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; background-color: #f8fafc; font-size: 14px; }
-        .analysis-card { background: #ffffff; border-radius: 20px; padding: 30px; border: 1px solid #e2e8f0; text-align: center; height: 100%; }
-        .risk-value { font-size: 58px; font-weight: 800; color: #1e293b; line-height: 1; }
-        .status-pill { display: inline-block; padding: 6px 20px; border-radius: 100px; font-weight: 800; font-size: 11px; text-transform: uppercase; margin-bottom: 20px; }
-        .status-high { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
-        .status-low { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
-        .risk-meter { height: 8px; background: #f1f5f9; border-radius: 10px; overflow: hidden; margin: 20px 0; }
-        .risk-fill { height: 100%; transition: width 1.5s ease-in-out; }
-        .audit-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 11px; border-bottom: 1px dashed #f1f5f9; }
-        .btn-predict { background: var(--bank-navy); color: white; border: none; padding: 16px; border-radius: 10px; font-weight: 700; width: 100%; margin-top: 20px; transition: 0.3s; }
-        .xai-grid-container { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        .xai-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; text-align: center; }
-        .xai-img-wrapper { height: 220px; display: flex; align-items: center; justify-content: center; overflow: hidden; background: white; border-radius: 8px; }
-        .xai-img-wrapper img { max-height: 100%; max-width: 100%; object-fit: contain; cursor: zoom-in; transition: 0.3s; }
-            
-        .triggers-card { background: white; border-left: 4px solid var(--accent-gold); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        :root {
+            --sidebar-bg:#0d1b2a; --sidebar-hover:#162032; --sidebar-active:#1a2840;
+            --accent-gold:#c9a84c; --bank-navy:#003366; --bank-navy-2:#004080;
+            --bg-body:#f4f6fb; --bg-card:#ffffff; --border:#e4e9f2; --border-soft:#eef1f8;
+            --text-primary:#0d1b2a; --text-secondary:#3d5166; --text-muted:#7a8fa6;
+            --danger:#dc2626; --danger-soft:#fef2f2; --danger-border:#fecaca;
+            --success:#059669; --success-soft:#f0fdf4; --success-border:#bbf7d0;
+            --shadow-sm:0 1px 4px rgba(13,27,42,0.06),0 4px 16px rgba(13,27,42,0.06);
+            --shadow-md:0 4px 8px rgba(13,27,42,0.06),0 8px 32px rgba(13,27,42,0.08);
+        }
+        *{box-sizing:border-box;margin:0;padding:0;}
+        body{font-family:'DM Sans',sans-serif;background:var(--bg-body);color:var(--text-primary);min-height:100vh;}
+        .sidebar{height:100vh;width:268px;position:fixed;top:0;left:0;background:var(--sidebar-bg);z-index:1000;display:flex;flex-direction:column;box-shadow:4px 0 24px rgba(0,0,0,0.18);}
+        .sidebar-brand{padding:26px 24px 24px;display:flex;align-items:center;gap:11px;text-decoration:none;border-bottom:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
+        .brand-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--accent-gold),#e8c56a);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--sidebar-bg);box-shadow:0 4px 12px rgba(201,168,76,0.35);flex-shrink:0;}
+        .brand-text{font-family:'DM Sans',sans-serif;font-weight:700;font-size:17px;color:#fff;letter-spacing:-0.2px;}
+        .nav-section-label{padding:22px 24px 8px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:1.4px;color:rgba(255,255,255,0.28);}
+        .nav-link{display:flex;align-items:center;gap:11px;padding:11px 14px;margin:2px 10px;border-radius:9px;color:rgba(255,255,255,0.52)!important;font-size:13.5px;font-weight:500;text-decoration:none;cursor:pointer;transition:all 0.18s;border-left:2px solid transparent;}
+        .nav-icon{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:rgba(255,255,255,0.06);transition:all 0.18s;}
+        .nav-link:hover{background:var(--sidebar-hover);color:rgba(255,255,255,0.85)!important;}
+        .nav-link:hover .nav-icon{background:rgba(255,255,255,0.10);}
+        .nav-link.active{background:var(--sidebar-active);color:#fff!important;font-weight:600;border-left-color:var(--accent-gold);}
+        .nav-link.active .nav-icon{background:rgba(201,168,76,0.18);color:var(--accent-gold);}
+        .sidebar-footer{margin-top:auto;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.07);flex-shrink:0;}
+        .status-dot{width:7px;height:7px;background:#10b981;border-radius:50%;display:inline-block;margin-right:7px;animation:blink 2.2s infinite;}
+        @keyframes blink{0%,100%{opacity:1}50%{opacity:0.35}}
+        .main-content{margin-left:268px;padding:36px 38px;min-height:100vh;}
+        .section-view{display:none;}
+        .section-view.active{display:block;animation:fadeUp 0.35s ease;}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+        .page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;}
+        .page-title{font-family:'DM Sans',sans-serif;font-size:22px;font-weight:700;color:var(--text-primary);letter-spacing:-0.4px;}
+        .page-subtitle{font-size:13px;color:var(--text-muted);margin-top:3px;}
+        .live-badge{display:inline-flex;align-items:center;gap:7px;background:var(--success-soft);border:1px solid var(--success-border);color:var(--success);font-size:11px;font-weight:700;padding:6px 14px;border-radius:100px;text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap;}
+        .card-panel{background:var(--bg-card);border-radius:16px;padding:26px;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+        .form-section-label{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.3px;color:var(--bank-navy);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+        .form-section-label::after{content:'';flex:1;height:1px;background:var(--border-soft);}
+        .field-label{font-size:10.5px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:6px;display:block;}
+        .form-control,.form-select{padding:10px 14px;border-radius:10px;border:1.5px solid var(--border);background:#fafbfd;font-size:13.5px;font-family:'DM Sans',sans-serif;color:var(--text-primary);transition:border-color 0.18s,box-shadow 0.18s;}
+        .form-control:focus,.form-select:focus{border-color:var(--bank-navy);box-shadow:0 0 0 3px rgba(0,51,102,0.08);background:#fff;outline:none;}
+        .form-check-input:checked{background-color:var(--bank-navy);border-color:var(--bank-navy);}
+        .toggle-row{display:flex;align-items:center;gap:12px;padding:13px 15px;background:#f8faff;border-radius:10px;border:1.5px solid var(--border);}
+        .toggle-label{font-size:13.5px;font-weight:600;color:var(--text-primary);}
+        .toggle-hint{font-size:11px;color:var(--text-muted);margin-top:1px;}
+        .btn-predict{background:linear-gradient(135deg,var(--bank-navy),var(--bank-navy-2));color:#fff;border:none;padding:14px 24px;border-radius:11px;font-weight:700;font-size:13.5px;width:100%;margin-top:18px;cursor:pointer;transition:all 0.22s;font-family:'DM Sans',sans-serif;letter-spacing:0.3px;box-shadow:0 4px 14px rgba(0,51,102,0.28);}
+        .btn-predict:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,51,102,0.36);}
+        .scorecard{background:var(--bg-card);border-radius:16px;padding:26px;border:1px solid var(--border);box-shadow:var(--shadow-sm);height:100%;display:flex;flex-direction:column;}
+        .scorecard-header{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.3px;color:var(--text-muted);margin-bottom:20px;}
+        .awaiting-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px 0;}
+        .awaiting-icon{width:64px;height:64px;background:linear-gradient(135deg,#eef2ff,#e0e7ff);border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:26px;color:var(--bank-navy);}
+        .risk-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 16px;border-radius:100px;font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;}
+        .risk-pill.high{background:var(--danger-soft);color:var(--danger);border:1px solid var(--danger-border);}
+        .risk-pill.low{background:var(--success-soft);color:var(--success);border:1px solid var(--success-border);}
+        .risk-number{font-family:'DM Sans',sans-serif;font-size:58px;font-weight:800;letter-spacing:-3px;line-height:1;}
+        .risk-number.high{color:var(--danger);}
+        .risk-number.low{color:var(--success);}
+        .risk-sublabel{font-size:12px;color:var(--text-muted);font-weight:500;margin-top:5px;}
+        .risk-track{height:6px;background:var(--border-soft);border-radius:10px;overflow:hidden;margin:16px 0 20px;}
+        .risk-bar{height:100%;border-radius:10px;transition:width 1.5s cubic-bezier(0.4,0,0.2,1);}
+        .risk-bar.high{background:linear-gradient(90deg,#f97316,#dc2626);}
+        .risk-bar.low{background:linear-gradient(90deg,#34d399,#059669);}
+        .audit-wrap{margin-top:auto;padding-top:18px;border-top:1px solid var(--border-soft);}
+        .audit-title{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-muted);margin-bottom:10px;}
+        .audit-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;font-size:11px;border-bottom:1px dashed var(--border-soft);}
+        .audit-row:last-child{border-bottom:none;}
+
+        /* BREAKDOWN */
+        #risk-breakdown{scroll-margin-top:20px;}
+        .breakdown-card{background:var(--bg-card);border-radius:16px;padding:26px;border:1px solid var(--border);box-shadow:var(--shadow-sm);animation:fadeUp 0.4s ease 0.1s both;}
+        .shap-img-wrap{background:#fafbfd;border-radius:12px;border:1px solid var(--border);overflow:hidden;text-align:center;padding:8px;}
+        .shap-img-wrap img{max-height:300px;object-fit:contain;cursor:zoom-in;}
+        .insight-box{padding:14px 16px;border-radius:11px;margin-bottom:12px;}
+        .insight-box:last-child{margin-bottom:0;}
+        .insight-box.danger{background:var(--danger-soft);border:1px solid var(--danger-border);border-left:3px solid var(--danger);}
+        .insight-box.success{background:var(--success-soft);border:1px solid var(--success-border);border-left:3px solid var(--success);}
+        .insight-tag{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;display:block;}
+        .insight-box.danger .insight-tag{color:var(--danger);}
+        .insight-box.success .insight-tag{color:var(--success);}
+        .insight-text{font-size:13px;font-weight:500;color:var(--text-primary);line-height:1.5;}
+        .ai-summary-heading{font-size:13px;font-weight:700;color:var(--text-primary);margin-bottom:14px;display:flex;align-items:center;gap:9px;}
+        .ai-icon-wrap{width:28px;height:28px;background:linear-gradient(135deg,var(--bank-navy),var(--bank-navy-2));border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:12px;flex-shrink:0;}
+
+        /* CUSTOMER SUMMARY GRID */
+        .profile-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+        .profile-summary-item{background:#f8faff;border:1px solid var(--border);border-radius:9px;padding:9px 12px;}
+        .profile-summary-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:var(--text-muted);}
+        .profile-summary-value{font-size:13px;font-weight:600;color:var(--text-primary);margin-top:2px;}
+
+        /* DOWNLOAD BUTTON */
+        .btn-download-pdf{background:linear-gradient(135deg,var(--bank-navy),var(--bank-navy-2));color:#fff;border:none;padding:9px 16px;border-radius:9px;font-size:12px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all 0.2s;box-shadow:0 2px 10px rgba(0,51,102,0.25);white-space:nowrap;}
+        .btn-download-pdf:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(0,51,102,0.38);}
+
+        /* BENCHMARKING */
+        .metric-card{background:var(--bg-card);border-radius:14px;padding:20px;border:1px solid var(--border);box-shadow:var(--shadow-sm);text-align:center;transition:transform 0.2s,box-shadow 0.2s;}
+        .metric-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+        .metric-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;margin:0 auto 10px;}
+        .metric-value{font-family:'DM Sans',sans-serif;font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;}
+        .metric-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:5px;}
+        .bench-wrap{background:var(--bg-card);border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+        .bench-wrap table{margin:0;}
+        .bench-wrap thead th{background:#f8faff;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);padding:14px 20px;border-bottom:1px solid var(--border);}
+        .bench-wrap tbody td{padding:15px 20px;font-size:13.5px;border-bottom:1px solid var(--border-soft);vertical-align:middle;}
+        .bench-wrap tbody tr:last-child td{border-bottom:none;}
+        .bench-wrap tbody tr:hover td{background:#f8faff;}
+        .champion-badge{font-size:9px;font-weight:800;text-transform:uppercase;padding:3px 9px;border-radius:100px;background:var(--success-soft);color:var(--success);border:1px solid var(--success-border);margin-left:8px;letter-spacing:0.4px;}
+
+        /* XAI */
+        .trigger-card{background:var(--bg-card);border-radius:16px;padding:22px;border:1px solid var(--border);border-left:3px solid var(--accent-gold);box-shadow:var(--shadow-sm);height:100%;display:flex;flex-direction:column;}
+        .trigger-section-title{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.3px;color:var(--text-primary);margin-bottom:20px;}
+        .trigger-item{margin-bottom:20px;}
+        .trigger-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+        .trigger-name{font-size:13px;font-weight:600;color:var(--text-primary);}
+        .sev-badge{font-size:9px;font-weight:800;padding:3px 9px;border-radius:100px;text-transform:uppercase;letter-spacing:0.4px;}
+        .sev-critical{background:#fef2f2;color:#dc2626;border:1px solid #fecaca;}
+        .sev-high{background:#fffbeb;color:#d97706;border:1px solid #fde68a;}
+        .sev-medium{background:#ecfeff;color:#0891b2;border:1px solid #a5f3fc;}
+        .trig-bar-track{height:4px;background:var(--border-soft);border-radius:10px;overflow:hidden;margin-bottom:5px;}
+        .trig-bar-fill{height:100%;border-radius:10px;}
+        .fill-critical{background:linear-gradient(90deg,#f97316,#dc2626);}
+        .fill-high{background:linear-gradient(90deg,#fbbf24,#f59e0b);}
+        .fill-medium{background:linear-gradient(90deg,#22d3ee,#0891b2);}
+        .trigger-desc{font-size:11px;color:var(--text-muted);line-height:1.5;}
+        .xai-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+        .xai-item{background:var(--bg-card);border-radius:14px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:transform 0.2s,box-shadow 0.2s;}
+        .xai-item:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);}
+        .xai-item-header{padding:10px 14px;background:#f8faff;border-bottom:1px solid var(--border);font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-secondary);display:flex;align-items:center;gap:8px;}
+        .model-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+        .xai-img-area{height:200px;display:flex;align-items:center;justify-content:center;padding:10px;background:white;}
+        .xai-img-area img{max-height:100%;max-width:100%;object-fit:contain;cursor:zoom-in;}
+        #imageModal .modal-content{background:rgba(13,27,42,0.92);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:18px;}
+        #imageModal .modal-body{padding:20px;}
+        #jump-btn{position:fixed;bottom:28px;right:32px;z-index:999;background:linear-gradient(135deg,var(--bank-navy),var(--bank-navy-2));color:white;border:none;border-radius:50px;padding:11px 20px;font-size:12.5px;font-weight:700;font-family:'DM Sans',sans-serif;box-shadow:0 6px 20px rgba(0,51,102,0.4);cursor:pointer;display:none;align-items:center;gap:8px;transition:all 0.25s;animation:slideUp 0.4s ease both;}
+        #jump-btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,51,102,0.5);}
+        @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        input::-webkit-outer-spin-button,input::-webkit-inner-spin-button{-webkit-appearance:none;}
     </style>
 </head>
 <body>
 
-    <div class="sidebar shadow">
-        <a href="#" class="sidebar-brand"><i class="fa-solid fa-building-columns me-2"></i> RetentionAI</a>
-        <div class="nav flex-column mt-4">
-            <a class="nav-link active" onclick="showSection('risk-assessment', this)"><i class="fa-solid fa-user-shield me-3"></i> Risk Assessment</a>
-            <a class="nav-link" onclick="showSection('model-comparison', this)"><i class="fa-solid fa-chart-bar me-3"></i> Architecture Benchmarking</a>
-            <a class="nav-link" onclick="showSection('xai-analysis', this)"><i class="fa-solid fa-microscope me-3"></i> Global Risk Intelligence</a>
-        </div>
+<div class="sidebar">
+    <a href="#" class="sidebar-brand">
+        <div class="brand-icon"><i class="fa-solid fa-building-columns"></i></div>
+        <span class="brand-text">RetentionAI</span>
+    </a>
+    <div class="nav-section-label">Navigation</div>
+    <div class="nav flex-column">
+        <a class="nav-link active" id="nav-risk" onclick="showSection('risk-assessment',this)">
+            <span class="nav-icon"><i class="fa-solid fa-user-shield"></i></span>Risk Assessment
+        </a>
+        {% if prediction_text %}
+        <a class="nav-link" id="nav-decomp" onclick="showSection('risk-decomposition',this)">
+            <span class="nav-icon"><i class="fa-solid fa-chart-gantt"></i></span>
+            Risk Decomposition
+            <span style="margin-left:auto;background:var(--accent-gold);color:#0d1b2a;font-size:8px;font-weight:800;padding:2px 7px;border-radius:100px;letter-spacing:0.4px;">NEW</span>
+        </a>
+        {% endif %}
+        <a class="nav-link" id="nav-bench" onclick="showSection('model-comparison',this)">
+            <span class="nav-icon"><i class="fa-solid fa-chart-bar"></i></span>Architecture Benchmarking
+        </a>
+        <a class="nav-link" id="nav-xai" onclick="showSection('xai-analysis',this)">
+            <span class="nav-icon"><i class="fa-solid fa-microscope"></i></span>Global Risk Intelligence
+        </a>
     </div>
+    <div class="sidebar-footer">
+        <div style="font-size:11.5px;color:rgba(255,255,255,0.55);font-weight:500;"><span class="status-dot"></span>All systems operational</div>
+        <div style="font-size:10.5px;color:rgba(255,255,255,0.28);margin-top:3px;">4 SOTA models active</div>
+    </div>
+</div>
 
-    <div class="main-content">
-        <!-- SECTION 1: RISK ASSESSMENT -->
-        <div id="risk-assessment" class="section-view active">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="fw-bold">Customer Risk Analysis</h2>
-                <span class="badge bg-primary p-2"><i class="fa-solid fa-clock-rotate-left me-1"></i> Live Risk Monitor</span>
+
+<div class="main-content">
+
+    <!-- SECTION 1: RISK ASSESSMENT -->
+    <div id="risk-assessment" class="section-view active">
+        <div class="page-header">
+            <div>
+                <div class="page-title">Customer Risk Analysis</div>
+                <div class="page-subtitle">Run churn predictions across 4 SOTA architectures</div>
             </div>
-            {% if error_msg %}<div class="alert alert-danger border-0 small mb-4">{{ error_msg }}</div>{% endif %}
-            <form action="/predict" method="POST">
-                <div class="row g-4">
-                    <div class="col-lg-8">
-                        <div class="glass-card">
-                            <div class="mb-4">
-                                <label>Target SOTA Architecture</label>
-                                <select name="ModelChoice" class="form-select fw-bold text-primary">
-                                    <option value="CatBoost" {{'selected' if not inputs or inputs['ModelChoice']=='CatBoost'}}>CatBoost (Champion)</option>
-                                    <option value="LightGBM" {{'selected' if inputs and inputs['ModelChoice']=='LightGBM'}}>LightGBM (Fastest)</option>
-                                    <option value="TabNet" {{'selected' if inputs and inputs['ModelChoice']=='TabNet'}}>TabNet (Deep Learning)</option>
-                                    <option value="TabPFN" {{'selected' if inputs and inputs['ModelChoice']=='TabPFN'}}>TabPFN (Transformer)</option>
+            <div class="live-badge"><span class="status-dot" style="margin-right:0;"></span>Live Monitor</div>
+        </div>
+
+        {% if error_msg %}
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-left:3px solid #dc2626;border-radius:10px;padding:12px 16px;font-size:13px;color:#dc2626;margin-bottom:20px;">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>{{ error_msg }}
+        </div>
+        {% endif %}
+
+        <form action="/predict" method="POST">
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <div class="card-panel">
+                        <div style="margin-bottom:22px;">
+                            <label class="field-label">Target SOTA Architecture</label>
+                            <select name="ModelChoice" class="form-select" style="font-weight:600;color:var(--bank-navy);">
+                                <option value="CatBoost" {{'selected' if not inputs or inputs['ModelChoice']=='CatBoost'}}>⚡ CatBoost — Champion Model</option>
+                                <option value="LightGBM" {{'selected' if inputs and inputs['ModelChoice']=='LightGBM'}}>🚀 LightGBM — Fastest Inference</option>
+                                <option value="TabNet"   {{'selected' if inputs and inputs['ModelChoice']=='TabNet'}}>🧠 TabNet — Deep Learning</option>
+                                <option value="TabPFN"   {{'selected' if inputs and inputs['ModelChoice']=='TabPFN'}}>🔮 TabPFN — Transformer</option>
+                            </select>
+                        </div>
+                        <div class="form-section-label">Customer Profile</div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="field-label">Geography</label>
+                                <select name="Geography" class="form-select" required>
+                                    <option value="" disabled {{'selected' if not inputs}}>Select Location</option>
+                                    <option value="0" {{'selected' if inputs and inputs['Geography']=='0'}}>🇫🇷 France</option>
+                                    <option value="1" {{'selected' if inputs and inputs['Geography']=='1'}}>🇩🇪 Germany</option>
+                                    <option value="2" {{'selected' if inputs and inputs['Geography']=='2'}}>🇪🇸 Spain</option>
                                 </select>
                             </div>
-                            <div class="section-title">Customer Profile</div>
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-4"><label>Geography</label><select name="Geography" class="form-select" required><option value="" disabled {{'selected' if not inputs}}>Select Location</option><option value="0" {{'selected' if inputs and inputs['Geography']=='0'}}>France</option><option value="1" {{'selected' if inputs and inputs['Geography']=='1'}}>Germany</option><option value="2" {{'selected' if inputs and inputs['Geography']=='2'}}>Spain</option></select></div>
-                                <div class="col-md-4"><label>Gender</label><select name="Gender" class="form-select" required><option value="" disabled {{'selected' if not inputs}}>Select Gender</option><option value="1" {{'selected' if inputs and inputs['Gender']=='1'}}>Male</option><option value="0" {{'selected' if inputs and inputs['Gender']=='0'}}>Female</option></select></div>
-                                <div class="col-md-4"><label>Age</label><input type="number" name="Age" class="form-control" placeholder="e.g. 35" value="{{inputs['Age'] if inputs else ''}}" required></div>
+                            <div class="col-md-4">
+                                <label class="field-label">Gender</label>
+                                <select name="Gender" class="form-select" required>
+                                    <option value="" disabled {{'selected' if not inputs}}>Select Gender</option>
+                                    <option value="1" {{'selected' if inputs and inputs['Gender']=='1'}}>Male</option>
+                                    <option value="0" {{'selected' if inputs and inputs['Gender']=='0'}}>Female</option>
+                                </select>
                             </div>
-                            <div class="section-title">Financial & Engagement</div>
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-4"><label>Balance ($)</label><input type="number" name="Balance" class="form-control" placeholder="e.g. 50000" value="{{inputs['Balance'] if inputs else ''}}" required></div>
-                                <div class="col-md-4"><label>Tenure (Years)</label><input type="number" name="Tenure" class="form-control" placeholder="0-10" value="{{inputs['Tenure'] if inputs else ''}}" required></div>
-                                <div class="col-md-4"><label>Products</label><input type="number" name="NumOfProducts" class="form-control" placeholder="1-4" value="{{inputs['NumOfProducts'] if inputs else ''}}" required></div>
+                            <div class="col-md-4">
+                                <label class="field-label">Age</label>
+                                <input type="number" name="Age" class="form-control" placeholder="e.g. 35" value="{{inputs['Age'] if inputs else ''}}" required>
                             </div>
-                            <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" name="IsActiveMember" value="1" {{'checked' if not inputs or inputs['IsActiveMember']}}><label class="switch-label fw-bold ms-2">Is Active Bank Member</label></div>
-                            <button type="submit" class="btn-predict">GENERATE RISK REPORT</button>
                         </div>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="analysis-card shadow-sm d-flex flex-column">
-                            <h6 class="engine-header">Risk Scorecard</h6>
-                            {% if prediction_text %}
-                                <div class="status-pill {{ 'status-high' if prediction_text == 'HIGH RISK' else 'status-low' }}">{{ prediction_text }}</div>
-                                <div class="risk-value">{{ prob_text }}</div>
-                                <div class="small text-muted fw-bold mb-3">Churn Probability</div>
-                                <div class="risk-meter"><div class="risk-fill {{ 'bg-danger' if prediction_text == 'HIGH RISK' else 'bg-success' }}" style="width: {{ prob_text }}"></div></div>
-                            {% else %}<div class="my-auto opacity-25 py-5"><i class="fa-solid fa-shield-heart fa-5x mb-3"></i><p class="fw-bold">Awaiting Data</p></div>{% endif %}
-                            <div class="audit-section mt-auto"><h6 class="text-muted small fw-bold border-bottom pb-2 mb-3">RECENT SYSTEM AUDITS</h6>
-                                {% for row in history %}<div class="audit-row"><span>{{ row[0] }}</span><span class="audit-model">{{ row[1] }}</span><span class="text-primary fw-bold" style="font-size: 10px;">{{ row[2] }}</span><span class="{{ 'text-danger' if row[3] == 'HIGH RISK' else 'text-success' }} fw-bold">{{ row[3] }}</span></div>{% endfor %}
+                        <div class="form-section-label">Financial &amp; Engagement</div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="field-label">Balance ($)</label>
+                                <input type="number" name="Balance" class="form-control" placeholder="e.g. 50000" value="{{inputs['Balance'] if inputs else ''}}" required>
                             </div>
+                            <div class="col-md-4">
+                                <label class="field-label">Tenure (Years)</label>
+                                <input type="number" name="Tenure" class="form-control" placeholder="0–10" value="{{inputs['Tenure'] if inputs else ''}}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="field-label">Products Held</label>
+                                <input type="number" name="NumOfProducts" class="form-control" placeholder="1–4" value="{{inputs['NumOfProducts'] if inputs else ''}}" required>
+                            </div>
+                        </div>
+                        <div class="toggle-row">
+                            <input class="form-check-input mt-0 flex-shrink-0" type="checkbox" name="IsActiveMember" value="1" {{'checked' if not inputs or inputs['IsActiveMember']}}>
+                            <div>
+                                <div class="toggle-label">Active Bank Member</div>
+                                <div class="toggle-hint">Customer actively uses banking services</div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-predict"><i class="fa-solid fa-bolt me-2"></i>Generate Risk Report</button>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="scorecard">
+                        <div class="scorecard-header">Risk Scorecard</div>
+                        {% if prediction_text %}
+                            <div class="text-center">
+                                <div class="risk-pill {{ 'high' if prediction_text == 'HIGH RISK' else 'low' }}">
+                                    <i class="fa-solid {{ 'fa-triangle-exclamation' if prediction_text == 'HIGH RISK' else 'fa-shield-check' }}"></i>
+                                    {{ prediction_text }}
+                                </div>
+                                <div class="risk-number {{ 'high' if prediction_text == 'HIGH RISK' else 'low' }}">{{ prob_text }}</div>
+                                <div class="risk-sublabel">Churn Probability</div>
+                                <div class="risk-track">
+                                    <div class="risk-bar {{ 'high' if prediction_text == 'HIGH RISK' else 'low' }}" style="width:{{ prob_text }}"></div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="awaiting-wrap">
+                                <div class="awaiting-icon"><i class="fa-solid fa-shield-heart"></i></div>
+                                <div style="font-weight:600;font-size:14px;color:var(--text-primary);">Awaiting Input</div>
+                                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.5;">Fill the form to generate a risk prediction</div>
+                            </div>
+                        {% endif %}
+                        <div class="audit-wrap">
+                            <div class="audit-title">Recent System Audits</div>
+                            {% for row in history %}
+                            <div class="audit-row">
+                                <span style="color:var(--text-muted);">{{ row[0] }}</span>
+                                <span style="font-weight:600;font-size:10.5px;color:var(--bank-navy);">{{ row[1] }}</span>
+                                <span style="font-weight:700;font-size:10.5px;color:var(--text-muted);">{{ row[2] }}</span>
+                                <span style="font-weight:700;font-size:10.5px;" class="{{ 'text-danger' if row[3] == 'HIGH RISK' else 'text-success' }}">{{ row[3] }}</span>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
-            </form>
-            {% if prediction_text %}
-            <div class="row mt-4"><div class="col-12"><div class="glass-card border-top border-4 border-primary"><div class="section-title">Risk Decomposition & AI Insights</div><div class="row align-items-center"><div class="col-md-7 border-end text-center"><label class="small fw-bold text-muted mb-3">Granular Factor Audit (Local SHAP)</label><img src="{{ url_for('static', filename='local_explanation.png') }}?{{ range(1, 9999) | random }}" class="img-fluid rounded" onclick="zoomImage(this.src)" style="cursor:zoom-in;"></div><div class="col-md-5 ps-4"><h6 class="fw-bold text-navy mb-3"><i class="fa-solid fa-robot me-2"></i>Strategic Summary</h6><div class="p-3 rounded mb-3" style="background: #fff5f5; border-left: 4px solid #dc3545;"><label class="text-danger fw-bold d-block mb-1" style="font-size: 10px;">Primary Risk Factor</label><span class="small fw-bold">{{ risk_reason }}</span></div><div class="p-3 rounded" style="background: #f0fff4; border-left: 4px solid #28a745;"><label class="text-success fw-bold d-block mb-1" style="font-size: 10px;">Retention Strength</label><span class="small fw-bold">{{ stable_reason }}</span></div></div></div></div></div></div>
+            </div>
+        </form>
+
+    </div><!-- end risk-assessment -->
+
+
+    <!-- SECTION: RISK DECOMPOSITION (dynamic, appears after prediction) -->
+    {% if prediction_text %}
+    <div id="risk-decomposition" class="section-view">
+        <div class="page-header">
+            <div>
+                <div class="page-title">Risk Decomposition</div>
+                <div class="page-subtitle">
+                    SHAP factor analysis &nbsp;&middot;&nbsp;
+                    {% if input_summary %}<i class="fa-solid fa-microchip me-1"></i>{{ input_summary.Model }}{% endif %}
+                    {% if timestamp %}&nbsp;&middot;&nbsp; {{ timestamp }}{% endif %}
+                </div>
+            </div>
+            <button class="btn-download-pdf" onclick="document.getElementById('pdfForm').submit()">
+                <i class="fa-solid fa-file-arrow-down"></i> Download PDF Report
+            </button>
+        </div>
+
+        <!-- ROW 1: Verdict banner (full width) -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div style="background:linear-gradient(135deg,var(--bank-navy),var(--bank-navy-2));border-radius:16px;padding:20px 28px;display:flex;justify-content:space-between;align-items:center;border:1px solid transparent;">
+                    <div style="display:flex;align-items:center;gap:16px;">
+                        <div style="width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;{{ 'color:#f87171;' if prediction_text == 'HIGH RISK' else 'color:#34d399;' }}">
+                            <i class="fa-solid {{ 'fa-triangle-exclamation' if prediction_text == 'HIGH RISK' else 'fa-shield-check' }}"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Churn Risk Verdict</div>
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 16px;border-radius:100px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:0.8px;{{ 'background:#fef2f2;color:#dc2626;border:1px solid #fecaca;' if prediction_text == 'HIGH RISK' else 'background:#f0fdf4;color:#059669;border:1px solid #bbf7d0;' }}">
+                                    {{ prediction_text }}
+                                </span>
+                                {% if input_summary %}
+                                <span style="font-size:11px;color:rgba(255,255,255,0.45);"><i class="fa-solid fa-microchip me-1"></i>{{ input_summary.Model }} &nbsp;&middot;&nbsp; <i class="fa-solid fa-clock me-1"></i>{{ timestamp }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:52px;font-weight:800;letter-spacing:-3px;line-height:1;{{ 'color:#f87171;' if prediction_text == 'HIGH RISK' else 'color:#34d399;' }}">{{ prob_text }}</div>
+                        <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;">Churn Probability</div>
+                        <div style="height:4px;width:160px;background:rgba(255,255,255,0.12);border-radius:10px;overflow:hidden;margin-top:8px;margin-left:auto;">
+                            <div style="height:100%;width:{{ prob_text }};border-radius:10px;{{ 'background:linear-gradient(90deg,#f97316,#dc2626);' if prediction_text == 'HIGH RISK' else 'background:linear-gradient(90deg,#34d399,#059669);' }}"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROW 2: SHAP chart (left) + AI Summary (right) -->
+        <div class="row g-3 mb-3">
+            <div class="col-lg-7">
+                <div class="breakdown-card" style="height:100%;">
+                    <label class="field-label mb-2">Granular Factor Audit &middot; Local SHAP</label>
+                    <div class="shap-img-wrap">
+                        <img src="{{ url_for('static', filename='local_explanation.png') }}?{{ range(1,9999)|random }}" class="img-fluid" onclick="zoomImage(this.src)">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="breakdown-card" style="height:100%;">
+                    <div class="ai-summary-heading">
+                        <span class="ai-icon-wrap"><i class="fa-solid fa-robot"></i></span>
+                        Strategic AI Summary
+                    </div>
+                    <div class="insight-box danger">
+                        <span class="insight-tag">&#9888; Primary Risk Factor</span>
+                        <div class="insight-text">{{ risk_reason }}</div>
+                    </div>
+                    <div class="insight-box success">
+                        <span class="insight-tag">&#10003; Retention Strength</span>
+                        <div class="insight-text">{{ stable_reason }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ROW 3: Retention Offers (full width, cards side by side) -->
+        {% if retention_offers %}
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="breakdown-card">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+                        <div>
+                            <div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:1.1px;color:var(--bank-navy);margin-bottom:3px;">
+                                <i class="fa-solid fa-hand-holding-heart me-2"></i>Personalised Retention Offers
+                            </div>
+                            <div style="font-size:11px;color:var(--text-muted);">Based on top SHAP risk drivers · {{ retention_offers|length }} interventions identified</div>
+                        </div>
+                        {% if prediction_text == 'HIGH RISK' %}
+                        <div style="background:var(--danger-soft);border:1px solid var(--danger-border);border-radius:100px;padding:5px 14px;font-size:10px;font-weight:700;color:var(--danger);">
+                            <i class="fa-solid fa-circle-exclamation me-1"></i>Action Required
+                        </div>
+                        {% else %}
+                        <div style="background:var(--success-soft);border:1px solid var(--success-border);border-radius:100px;padding:5px 14px;font-size:10px;font-weight:700;color:var(--success);">
+                            <i class="fa-solid fa-lightbulb me-1"></i>Opportunity
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="row g-3">
+                    {% for offer in retention_offers %}
+                    {% if offer.urgency == 'critical' %}
+                        {% set urg_bg = '#fef2f2' %}{% set urg_bdr = '#fecaca' %}{% set urg_color = '#dc2626' %}
+                    {% elif offer.urgency == 'high' %}
+                        {% set urg_bg = '#fffbeb' %}{% set urg_bdr = '#fde68a' %}{% set urg_color = '#d97706' %}
+                    {% else %}
+                        {% set urg_bg = '#ecfeff' %}{% set urg_bdr = '#a5f3fc' %}{% set urg_color = '#0891b2' %}
+                    {% endif %}
+                    <div class="col-md-4">
+                        <div style="background:#fafbfd;border:1.5px solid {{ urg_bdr }};border-left:3.5px solid {{ offer.color }};border-radius:12px;padding:16px;height:100%;display:flex;flex-direction:column;gap:10px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <div style="width:36px;height:36px;background:{{ urg_bg }};border:1px solid {{ urg_bdr }};border-radius:10px;display:flex;align-items:center;justify-content:center;color:{{ offer.color }};font-size:15px;flex-shrink:0;">
+                                    <i class="fa-solid {{ offer.icon }}"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size:12.5px;font-weight:700;color:var(--text-primary);line-height:1.3;">{{ offer.title }}</div>
+                                    <div style="display:flex;gap:5px;margin-top:3px;flex-wrap:wrap;">
+                                        <span style="background:{{ urg_bg }};border:1px solid {{ urg_bdr }};color:{{ urg_color }};font-size:8px;font-weight:800;text-transform:uppercase;letter-spacing:0.5px;padding:2px 7px;border-radius:100px;">{{ offer.urgency }}</span>
+                                        <span style="font-size:9px;font-weight:700;color:var(--success);background:var(--success-soft);border:1px solid var(--success-border);padding:2px 7px;border-radius:100px;">{{ offer.impact }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <p style="font-size:11.5px;color:var(--text-secondary);line-height:1.55;margin:0;flex:1;">{{ offer.description }}</p>
+                            <div style="background:{{ urg_bg }};border:1px solid {{ urg_bdr }};border-radius:8px;padding:8px 11px;display:flex;align-items:flex-start;gap:7px;">
+                                <i class="fa-solid fa-arrow-right" style="color:{{ offer.color }};font-size:9px;margin-top:2px;flex-shrink:0;"></i>
+                                <span style="font-size:10.5px;font-weight:600;color:var(--text-primary);">{{ offer.action }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ROW 4: Customer Profile (full width, single row) -->
+        {% if input_summary %}
+        <div class="row">
+            <div class="col-12">
+                <div class="breakdown-card">
+                    <div style="font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:1.1px;color:var(--text-muted);margin-bottom:14px;">
+                        <i class="fa-solid fa-id-card me-2"></i>Customer Profile Summary
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:10px;">
+                        {% for k, v in input_summary.items() if k != 'Model' %}
+                        <div style="background:#f8faff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;">
+                            <div style="font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:var(--text-muted);margin-bottom:3px;">{{ k }}</div>
+                            <div style="font-size:13px;font-weight:700;color:var(--text-primary);">{{ v }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- HIDDEN PDF FORM -->
+        <form id="pdfForm" action="/report" method="POST" style="display:none;">
+            <input type="hidden" name="prediction_text"  value="{{ prediction_text }}">
+            <input type="hidden" name="prob_text"        value="{{ prob_text }}">
+            <input type="hidden" name="risk_reason"      value="{{ risk_reason }}">
+            <input type="hidden" name="stable_reason"    value="{{ stable_reason }}">
+            <input type="hidden" name="timestamp"        value="{{ timestamp }}">
+            <input type="hidden" name="model_used"       value="{{ input_summary.Model if input_summary else '' }}">
+            <input type="hidden" name="Geography"        value="{{ inputs.Geography }}">
+            <input type="hidden" name="Gender"           value="{{ inputs.Gender }}">
+            <input type="hidden" name="Age"              value="{{ inputs.Age }}">
+            <input type="hidden" name="Balance"          value="{{ inputs.Balance }}">
+            <input type="hidden" name="Tenure"           value="{{ inputs.Tenure }}">
+            <input type="hidden" name="NumOfProducts"    value="{{ inputs.NumOfProducts }}">
+            <input type="hidden" name="IsActiveMember"   value="{{ inputs.IsActiveMember or '' }}">
+            {% if retention_offers %}
+            <input type="hidden" name="offers_data" value="{% for o in retention_offers %}{{ o.title }}|||{{ o.urgency }}|||{{ o.impact }}|||{{ o.description }}|||{{ o.action }}{% if not loop.last %}<<<{% endif %}{% endfor %}">
             {% endif %}
+        </form>
+    </div>
+    {% endif %}
+    <div id="model-comparison" class="section-view">
+        <div class="page-header">
+            <div><div class="page-title">Architecture Benchmarking</div><div class="page-subtitle">Comparative performance across all 4 SOTA models</div></div>
         </div>
-
-        <!-- SECTION 2: ARCHITECTURE BENCHMARKING -->
-        <div id="model-comparison" class="section-view">
-            <h2 class="fw-bold mb-4">Architecture Benchmarking</h2>
-            <div class="row g-4 mb-4">
-                <div class="col-md-3"><div class="glass-card text-center p-3 border-bottom border-4 border-success"><div class="text-muted small fw-bold mb-1">PEAK F1-SCORE</div><div class="h3 fw-bold mb-0 text-success">91.09%</div></div></div>
-                <div class="col-md-3"><div class="glass-card text-center p-3 border-bottom border-4 border-primary"><div class="text-muted small fw-bold mb-1">LOWEST LATENCY</div><div class="h3 fw-bold mb-0 text-primary">0.8 ms</div></div></div>
-                <div class="col-md-3"><div class="glass-card text-center p-3 border-bottom border-4 border-info"><div class="text-muted small fw-bold mb-1">DATA VOLUME</div><div class="h3 fw-bold mb-0 text-info">1.6L+</div></div></div>
-                <div class="col-md-3"><div class="glass-card text-center p-3 border-bottom border-4 border-secondary"><div class="text-muted small fw-bold mb-1">SOTA MODELS</div><div class="h3 fw-bold mb-0 text-secondary">04</div></div></div>
-            </div>
-            <div class="glass-card p-0 overflow-hidden mb-4">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark"><tr><th class="ps-4 py-3">Architecture</th><th>F1-Score</th><th>Training Time</th><th>Latency</th><th>Research Role</th></tr></thead>
-                    <tbody>
-                        <tr style="height: 60px;"><td class="ps-4"><span class="fw-bold">CatBoost</span> <span class="badge bg-success ms-2" style="font-size: 8px;">CHAMPION</span></td><td class="text-success fw-bold">91.09%</td><td>10.7s</td><td class="fw-bold text-navy">1.2 ms</td><td>Production Champion</td></tr>
-                        <tr style="height: 60px;"><td class="ps-4"><span class="fw-bold">LightGBM</span></td><td class="fw-bold">91.05%</td><td>4.3s</td><td class="fw-bold text-navy">0.8 ms</td><td>Speed Benchmark</td></tr>
-                        <tr style="height: 60px;"><td class="ps-4"><span class="fw-bold">TabPFN</span></td><td class="fw-bold">85.30%</td><td>0.62s</td><td class="fw-bold text-navy">45.0 ms</td><td>In-Context Learning</td></tr>
-                        <tr style="height: 60px;"><td class="ps-4"><span class="fw-bold">TabNet</span></td><td class="fw-bold">81.54%</td><td>588s</td><td class="fw-bold text-navy">12.0 ms</td><td>Neural Attention</td></tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-3"><div class="metric-card"><div class="metric-icon" style="background:#f0fdf4;color:#059669;"><i class="fa-solid fa-trophy"></i></div><div class="metric-value" style="color:#059669;">91.09%</div><div class="metric-label">Peak F1-Score</div></div></div>
+            <div class="col-md-3"><div class="metric-card"><div class="metric-icon" style="background:#eff6ff;color:var(--bank-navy);"><i class="fa-solid fa-bolt"></i></div><div class="metric-value" style="color:var(--bank-navy);">0.8ms</div><div class="metric-label">Lowest Latency</div></div></div>
+            <div class="col-md-3"><div class="metric-card"><div class="metric-icon" style="background:#ecfeff;color:#0891b2;"><i class="fa-solid fa-database"></i></div><div class="metric-value" style="color:#0891b2;">1.6L+</div><div class="metric-label">Data Volume</div></div></div>
+            <div class="col-md-3"><div class="metric-card"><div class="metric-icon" style="background:#faf5ff;color:#7c3aed;"><i class="fa-solid fa-microchip"></i></div><div class="metric-value" style="color:#7c3aed;">04</div><div class="metric-label">SOTA Models</div></div></div>
         </div>
+        <div class="bench-wrap"><table class="table mb-0">
+            <thead><tr><th style="padding-left:24px;">Architecture</th><th>F1-Score</th><th>Training Time</th><th>Latency</th><th>Research Role</th></tr></thead>
+            <tbody>
+                <tr><td style="padding-left:24px;font-weight:600;">CatBoost<span class="champion-badge">Champion</span></td><td style="color:var(--success);font-weight:700;">91.09%</td><td style="color:var(--text-muted);">10.7s</td><td style="font-weight:600;color:var(--bank-navy);">1.2 ms</td><td style="color:var(--text-muted);">Production Champion</td></tr>
+                <tr><td style="padding-left:24px;font-weight:600;">LightGBM</td><td style="font-weight:700;">91.05%</td><td style="color:var(--text-muted);">4.3s</td><td style="font-weight:600;color:var(--bank-navy);">0.8 ms</td><td style="color:var(--text-muted);">Speed Benchmark</td></tr>
+                <tr><td style="padding-left:24px;font-weight:600;">TabPFN</td><td style="font-weight:700;">85.30%</td><td style="color:var(--text-muted);">0.62s</td><td style="font-weight:600;color:var(--bank-navy);">45.0 ms</td><td style="color:var(--text-muted);">In-Context Learning</td></tr>
+                <tr><td style="padding-left:24px;font-weight:600;">TabNet</td><td style="font-weight:700;">81.54%</td><td style="color:var(--text-muted);">588s</td><td style="font-weight:600;color:var(--bank-navy);">12.0 ms</td><td style="color:var(--text-muted);">Neural Attention</td></tr>
+            </tbody>
+        </table></div>
+    </div>
 
-        <!-- SECTION 3: GLOBAL RISK INTELLIGENCE -->
-        <div id="xai-analysis" class="section-view">
-            <h2 class="fw-bold mb-4">Global Risk Intelligence</h2>
-            <div class="row g-4">
-                <div class="col-lg-3">
-                    <div class="glass-card border-start border-4 border-warning p-3 h-100 d-flex flex-column">
-                        <h6 class="fw-bold mb-3" style="font-size: 13px; color: #1e293b;">TOP ATTRITION TRIGGERS</h6>
-                        <div class="mb-4"><div class="d-flex justify-content-between mb-1"><span class="small fw-bold">1. Customer Age</span><span class="badge bg-danger" style="font-size: 9px;">CRITICAL</span></div><div class="progress" style="height: 4px;"><div class="progress-bar bg-danger" style="width: 95%"></div></div><p class="text-muted mt-1" style="font-size: 10px;">Risk peaks in the 45-60 age bracket.</p></div>
-                        <div class="mb-4"><div class="d-flex justify-content-between mb-1"><span class="small fw-bold">2. Product Count</span><span class="badge bg-warning text-dark" style="font-size: 9px;">HIGH</span></div><div class="progress" style="height: 4px;"><div class="progress-bar bg-warning" style="width: 75%"></div></div><p class="text-muted mt-1" style="font-size: 10px;">High churn risk for 1-product users.</p></div>
-                        <div class="mb-4"><div class="d-flex justify-content-between mb-1"><span class="small fw-bold">3. Member Activity</span><span class="badge bg-info text-white" style="font-size: 9px;">MEDIUM</span></div><div class="progress" style="height: 4px;"><div class="progress-bar bg-info" style="width: 50%"></div></div><p class="text-muted mt-1" style="font-size: 10px;">Inactive members show 3x higher churn.</p></div>
-                        <div class="mt-auto pt-3 border-top small text-muted">Consensus verified across all 4 SOTA models.</div>
+
+    <!-- SECTION 3: GLOBAL RISK INTELLIGENCE -->
+    <div id="xai-analysis" class="section-view">
+        <div class="page-header">
+            <div><div class="page-title">Global Risk Intelligence</div><div class="page-subtitle">SHAP-based global explainability across all architectures</div></div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-3">
+                <div class="trigger-card">
+                    <div class="trigger-section-title">Top Attrition Triggers</div>
+                    <div class="trigger-item">
+                        <div class="trigger-header"><span class="trigger-name">1. Customer Age</span><span class="sev-badge sev-critical">Critical</span></div>
+                        <div class="trig-bar-track"><div class="trig-bar-fill fill-critical" style="width:95%;"></div></div>
+                        <div class="trigger-desc">Risk peaks in the 45–60 age bracket.</div>
                     </div>
+                    <div class="trigger-item">
+                        <div class="trigger-header"><span class="trigger-name">2. Product Count</span><span class="sev-badge sev-high">High</span></div>
+                        <div class="trig-bar-track"><div class="trig-bar-fill fill-high" style="width:75%;"></div></div>
+                        <div class="trigger-desc">High churn risk for 1-product users.</div>
+                    </div>
+                    <div class="trigger-item">
+                        <div class="trigger-header"><span class="trigger-name">3. Member Activity</span><span class="sev-badge sev-medium">Medium</span></div>
+                        <div class="trig-bar-track"><div class="trig-bar-fill fill-medium" style="width:50%;"></div></div>
+                        <div class="trigger-desc">Inactive members show 3× higher churn.</div>
+                    </div>
+                    <div style="margin-top:auto;padding-top:16px;border-top:1px solid var(--border-soft);font-size:11px;color:var(--text-muted);line-height:1.6;">Consensus verified across all 4 SOTA models.</div>
                 </div>
-                <div class="col-lg-9">
-                    <div class="xai-grid-container">
-                        <div class="xai-item"><label>CatBoost</label><div class="xai-img-wrapper"><img src="{{ url_for('static', filename='shap_catboost_7.png') }}" onclick="zoomImage(this.src)"></div></div>
-                        <div class="xai-item"><label>TabNet</label><div class="xai-img-wrapper"><img src="{{ url_for('static', filename='shap_tabnet_7.png') }}" onclick="zoomImage(this.src)"></div></div>
-                        <div class="xai-item"><label>LightGBM</label><div class="xai-img-wrapper"><img src="{{ url_for('static', filename='shap_lightgbm_7.png') }}" onclick="zoomImage(this.src)"></div></div>
-                        <div class="xai-item"><label>TabPFN</label><div class="xai-img-wrapper"><img src="{{ url_for('static', filename='shap_tabpfn_7.png') }}" onclick="zoomImage(this.src)"></div></div>
-                    </div>
+            </div>
+            <div class="col-lg-9">
+                <div class="xai-grid">
+                    <div class="xai-item"><div class="xai-item-header"><span class="model-dot" style="background:#059669;"></span>CatBoost · Global SHAP</div><div class="xai-img-area"><img src="{{ url_for('static', filename='shap_catboost_7.png') }}" onclick="zoomImage(this.src)"></div></div>
+                    <div class="xai-item"><div class="xai-item-header"><span class="model-dot" style="background:#003366;"></span>TabNet · Global SHAP</div><div class="xai-img-area"><img src="{{ url_for('static', filename='shap_tabnet_7.png') }}" onclick="zoomImage(this.src)"></div></div>
+                    <div class="xai-item"><div class="xai-item-header"><span class="model-dot" style="background:#c9a84c;"></span>LightGBM · Global SHAP</div><div class="xai-img-area"><img src="{{ url_for('static', filename='shap_lightgbm_7.png') }}" onclick="zoomImage(this.src)"></div></div>
+                    <div class="xai-item"><div class="xai-item-header"><span class="model-dot" style="background:#7c3aed;"></span>TabPFN · Global SHAP</div><div class="xai-img-area"><img src="{{ url_for('static', filename='shap_tabpfn_7.png') }}" onclick="zoomImage(this.src)"></div></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Zoom Modal -->
-    <div class="modal fade" id="imageModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered modal-xl"><div class="modal-content bg-transparent border-0"><div class="modal-body text-center p-0"><img src="" id="modalImage" class="img-fluid rounded shadow-lg" style="max-height: 90vh;"><button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button></div></div></div></div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function showSection(sectionId, element) {
-            document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            element.classList.add('active');
-        }
-        function zoomImage(src) { document.getElementById('modalImage').src = src; new bootstrap.Modal(document.getElementById('imageModal')).show(); }
-        window.onload = function() { {% if prediction_text %} showSection('risk-assessment', document.querySelector('.nav-link')); {% endif %} };
-    </script>
+<!-- Zoom Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content"><div class="modal-body text-center p-3">
+            <img src="" id="modalImage" class="img-fluid rounded" style="max-height:88vh;">
+            <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal"></button>
+        </div></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    function showSection(sectionId, el) {
+        document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        el.classList.add('active');
+    }
+    function zoomImage(src) {
+        document.getElementById('modalImage').src = src;
+        new bootstrap.Modal(document.getElementById('imageModal')).show();
+    }
+    window.onload = function () {
+        {% if prediction_text %}
+            const decompNav = document.getElementById('nav-decomp');
+            if (decompNav) {
+                showSection('risk-decomposition', decompNav);
+            }
+        {% endif %}
+    };
+</script>
 </body>
 </html>
