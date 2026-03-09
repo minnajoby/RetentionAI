@@ -177,10 +177,13 @@ def predict():
         # 1. Validation
         feature_list = []
         for f in FEATURE_NAMES:
-            val = request.form.get(f)
-            if val is None or val.strip() == "":
-                return render_template('index.html', error_msg="All fields are required.",
-                                       history=history, inputs=request.form)
+            if f == 'IsActiveMember':
+                val = request.form.get(f, '0')  # unchecked checkbox = 0
+            else:
+                val = request.form.get(f)
+                if val is None or val.strip() == "":
+                    return render_template('index.html', error_msg="All fields are required.",
+                                           history=history, inputs=request.form)
             feature_list.append(float(val))
 
         # 2. Process
