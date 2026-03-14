@@ -30,14 +30,14 @@ RetentionAI is a high-performance, end-to-end machine learning pipeline designed
 
 ## 🏆 Model Benchmarking (SOTA Leaderboard)
 
-*Updated as of Jan 30, 2026*
+*Updated as of March 14, 2026*
 
-| Rank | Architecture | F1-Score | Latency | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **1** | **CatBoost** | **91.09%** | 10.7s | **Champion** |
-| 2 | LightGBM | 91.05% | 4.3s | Optimized |
-| 3 | TabNet | *Evaluating* | - | Research |
-| 4 | TabPFN | *Evaluating* | - | Research |
+| Rank | Architecture | F1-Score | Training Time | Latency | Research Role |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **1** | **CatBoost** | **91.09%** | 10.7s | 1.2 ms | Production Champion |
+| 2 | LightGBM | 91.05% | 4.3s | 0.8 ms | Speed Benchmark |
+| 3 | TabPFN | 85.30% | 0.62s | 45.0 ms | In-Context Learning |
+| 4 | TabNet | 81.54% | 588s | 12.0 ms | Neural Attention |
 
 ---
 
